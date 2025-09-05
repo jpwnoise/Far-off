@@ -1,0 +1,23 @@
+<div class="interface">
+    <div class="stats">
+        <div> Health: {{ playerShip.stats.health.toString().padStart(3, '0') }} </div>
+        <div> Shield: {{ playerShip.stats.shield.toString().padStart(3, '0') }} </div>
+        <div> Energy: {{ playerShip.stats.energy.toString().padStart(3, '0') }} </div>
+
+    </div>
+    <div class="canvas_container">
+        @if (enemyHudVisible === true) {
+            <div class="enemy_hud_container">
+                <div class="life_bar">
+                    <!--div class="life_bar_fill" [style.width.%]="enemy.stats.health"></div-->
+                </div>
+            </div>
+        }
+        <canvas #gameCanvas width="800" height="600">
+        </canvas>
+        <div style="display:flex; justify-content:center; border:1px solid black">
+            <button class="play_pause" (click)="playPause()">{{isPlaying?'Pausar':'Jugar'}}</button>
+        </div>
+    </div>
+    <div></div>
+</div>
