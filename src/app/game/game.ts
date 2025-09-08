@@ -65,7 +65,10 @@ export class Game implements AfterViewInit {
         {x:650,y:300}], 
         repeat:true, 
         delayBetweenPositions:1000 });
-    enemy.projectileWasCreated = (p)=>{ this.primerNivel.add(p)}
+    enemy.projectileWasCreated = (p)=>{ this.primerNivel.add(p) }
+    enemy.ctx = this.ctx;
+    enemy.particlesSystem = this.particleSystem;
+    this.playerShip.projectileWasCreated = (p)=>{ this.primerNivel.add(p) }
     this.primerNivel.add(enemy);
     this.loop();
   }
@@ -82,6 +85,7 @@ export class Game implements AfterViewInit {
     //si no esta en pausa, renderiza
     if (this.isPlaying) {
       this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
       this.backgroundCreator.drawBackground();
       this.primerNivel.draw();
       this.particleSystem.draw();

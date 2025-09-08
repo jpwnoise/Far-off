@@ -8,7 +8,6 @@ export class Proyectile extends GameObject implements iCollidable {
   public width: number = 5;
   public height: number = 10;
   public speed: number = 7;
-  public isActive: boolean = true;
   public owner?: GameObject;
   particleSystem!: ParticleSystem;
 
@@ -51,7 +50,7 @@ export class Proyectile extends GameObject implements iCollidable {
   }
 
   override draw(): void {
-    if (!this.isActive || !this.ctx) return;
+    if (!this.active || !this.ctx) return;
 
     this.ctx.save();
     this.ctx.fillStyle = 'blue';
@@ -74,7 +73,7 @@ export class Proyectile extends GameObject implements iCollidable {
 
 
   onCollision(other: GameObject): void {
-    this.isActive = false;
+    this.active = false;
     //this.particleSystem.spawn(other.x, other.y,'orange',10); 
   }
 }

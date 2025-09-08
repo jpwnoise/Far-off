@@ -14,6 +14,7 @@ export class BackgroundCreator {
         }) {
         this.canvasRef = canvasRef;
         this.ctx = ctx;
+        this.initStars();
     }
 
     private stars: Star[] = [];

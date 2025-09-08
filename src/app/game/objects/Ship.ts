@@ -50,12 +50,12 @@ export class Ship extends GameObject implements iCollidable {
     /** === que hacer cuando colisiona === */
     onCollision(other: GameObject): void {
         // Solo procesamos si other es un proyectil activo
-        if (other instanceof Proyectile && other.isActive) {
+        if (other instanceof Proyectile && other.active) {
             // Evitamos que el proyectil nos golpee más de una vez
             if (!this.lastHitOwner || this.lastHitOwner.identifier !== other.identifier) {
                 this.stats.takeDamage(5);
                 this.lastHitOwner = other;
-                other.isActive = false; // destruimos el proyectil
+                other.active = false; // destruimos el proyectil
                 this.particlesSystem.spawn(other.x, other.y, [255, 165, 0, 1], [255, 0, 0, 0], 5)
             }
         }
@@ -81,6 +81,7 @@ export class Ship extends GameObject implements iCollidable {
             projectile.ctx = this.ctx;
             projectile.particleSystem = this.particlesSystem;
             this.lastShotTime = now;
+            this.projectileWasCreated(projectile);
             this.projectiles.push(projectile)
         }
     }
@@ -102,6 +103,9 @@ export class Ship extends GameObject implements iCollidable {
         if (this.input.isPressed('w') && this.y - (this.radius ?? 0) > 0) this.y -= this.speed;
         if (this.input.isPressed('s') && this.y + (this.radius ?? 0) < canvasHeight) this.y += this.speed;
     }
+
+    //** === para externar los proyectiles y poderlos agregarlos a la escena que es el que controla las colisiones === */
+    projectileWasCreated:(p:Proyectile)=>void = ()=>{}
 
     /** === dibuja la forma correcta === */
     override draw() {

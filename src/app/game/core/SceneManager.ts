@@ -1,6 +1,7 @@
 import { ElementRef } from "@angular/core";
 import { GameObject } from "../objects/GameObject";
 import { CollisionSystem } from "./CollisitionSystem";
+import { Proyectile } from "../objects/Proyectile";
 
 export class SceneManager {
   public scenes = []
@@ -14,14 +15,20 @@ export class SceneManager {
 
 /** escenas o niveles del juego algo que se va a ir cargando dependiendo del momento adecuado */
 export class Scene {
-  
+
   gameObjects: GameObject[] = [];
 
   update() {
+    // Filtra los objetos que ya no están activos (como proyectiles desactivados)
+    this.gameObjects = this.gameObjects.filter(obj => obj.active);
+
     this.gameObjects.forEach((gameObj) => {
       gameObj.update();
       CollisionSystem.iterateGameObjectsForCollisions(this.gameObjects);
-    })
+    });
+
+    // Llama al nuevo método para eliminar proyectiles fuera del canvas
+    this._checkAndRemoveOutOfBoundObjects();
   }
 
   draw() {
@@ -39,5 +46,26 @@ export class Scene {
     gameObject.canvas = this.canvas;
     gameObject.ctx = this.ctx;
     this.gameObjects.push(gameObject)
+  }
+
+  /**
+  * Método privado para desactivar proyectiles que salieron del canvas.
+  */
+  private _checkAndRemoveOutOfBoundObjects() {
+    this.gameObjects.forEach((gameObj) => {
+      // Solo se aplica a los proyectiles
+      if (gameObj instanceof Proyectile) {
+        const isOutOfBounds =
+          gameObj.x < 0 ||
+          gameObj.x > this.canvas.nativeElement.width ||
+          gameObj.y < 0 ||
+          gameObj.y > this.canvas.nativeElement.height;
+
+        if (isOutOfBounds) {
+          // Desactiva el proyectil para que sea eliminado en el próximo update
+          gameObj.active = false;
+        }
+      }
+    });
   }
 }

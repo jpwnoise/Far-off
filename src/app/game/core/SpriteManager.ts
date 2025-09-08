@@ -1,7 +1,7 @@
 import { Sprite } from "./Sprite";
 
 export class SpriteManager {
-    private sprites: Sprite[] = [];
+    public sprites: Sprite[] = [];
     private currentIndex: number = 0;
 
     // Agrega un sprite al manager
@@ -9,7 +9,7 @@ export class SpriteManager {
         this.sprites.push(sprite);
     }
 
-    // Cambia al siguiente sprite (ciclo)
+    /** Cambia al siguiente sprite (ciclo) */
     nextSprite() {
         if (this.sprites.length === 0) return;
         this.currentIndex = (this.currentIndex + 1) % this.sprites.length;
@@ -27,7 +27,7 @@ export class SpriteManager {
         return this.sprites[this.currentIndex];
     }
 
-    // Cambia a un sprite específico por índice
+    /** Cambia a un sprite específico por índice */ 
     setSprite(index: number) {
         if (index < 0 || index >= this.sprites.length) return;
         this.currentIndex = index;

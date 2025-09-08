@@ -11,6 +11,8 @@ export class GameObject {
     public canvas!: ElementRef<HTMLCanvasElement>;
     ctx!: CanvasRenderingContext2D;
     squareColliderManager!:SquareColliderManager;
+    public active: boolean = true;
+
 
     constructor({ x = 0, y = 0, radius }: { x?: number; y?: number; radius?: number } = {}) {
         this.x = x;

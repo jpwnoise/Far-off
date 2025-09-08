@@ -1,8 +1,6 @@
 import { GameObject } from "../objects/GameObject";
-import { Ship } from "../objects/Ship";
 import { Proyectile } from "../objects/Proyectile";
 import { iCollidable } from "../objects/Collider";
-import { Enemy } from "../objects/Enemy";
 
 export class CollisionSystem {
   /** ===== revisa si dos objetos están colisionando ===== **/
@@ -24,32 +22,6 @@ export class CollisionSystem {
         }
       }
       return false; // ❌ no colisionaron
-    }
-
-    // --- Ship vs Ship (círculos) ---
-    if (obj1 instanceof Ship && obj2 instanceof Ship) {
-      const dx = obj1.x - obj2.x;
-      const dy = obj1.y - obj2.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      const r1 = obj1.radius ?? 0;
-      const r2 = obj2.radius ?? 0;
-      return distance < r1 + r2;
-    }
-
-    // --- Projectile vs Ship/Enemy (fallback AABB) ---
-    if (obj1 instanceof Proyectile && (obj2 instanceof Ship || obj2 instanceof Enemy)) {
-      const r2 = obj2.radius ?? 0;
-      return (
-        obj1.x + obj1.width / 2 > obj2.x - r2 &&
-        obj1.x - obj1.width / 2 < obj2.x + r2 &&
-        obj1.y < obj2.y + r2 &&
-        obj1.y + obj1.height > obj2.y - r2
-      );
-    }
-
-    // --- Caso inverso ---
-    if ((obj1 instanceof Ship || obj1 instanceof Enemy) && obj2 instanceof Proyectile) {
-      return this.checkCollision(obj2, obj1);
     }
 
     return false;
