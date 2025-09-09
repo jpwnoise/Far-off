@@ -7,6 +7,7 @@ import { Enemy } from './objects/Enemy';
 import { BackgroundCreator } from './objects/BackgroundCreator';
 import { Stats } from './objects/Stats';
 import { Scene, SceneManager } from './core/SceneManager';
+import { enemiesLevel_1 } from './EnemiesLevel_1';
 
 @Component({
   selector: 'app-game',
@@ -15,6 +16,7 @@ import { Scene, SceneManager } from './core/SceneManager';
 })
 export class Game implements AfterViewInit {
 
+  enemiesLevel_1 = enemiesLevel_1; 
   sceneManager!:SceneManager;
   /** === controlando el estado de juego "jugando/pausado" ===*/
   isPlaying = true;
@@ -41,35 +43,29 @@ export class Game implements AfterViewInit {
 
   playerShip!:Ship; 
 
+  enemies:Enemy[] = [];
+
+  /** === cuando en el enemigo lanza disparos estos tienen que se agregados a la escena para que funcionen las colisiones en ellos */
+  addEnemiesAndProjectilesToScene(){
+    this.enemiesLevel_1.forEach(e=>{
+      e.projectileWasCreated = (p)=>{ this.primerNivel.add(p) };
+      e.ctx = this.ctx; 
+      e.particlesSystem = this.particleSystem
+      this.primerNivel.add(e);
+    })
+  }
+
   ngAfterViewInit(): void {
     const canvas = this.canvasRef.nativeElement;
     this.ctx = canvas.getContext('2d')!;
     this.sceneManager = new SceneManager(this.canvasRef,this.ctx);
     this.primerNivel = new Scene(this.canvasRef,this.ctx);
-    
     this.particleSystem = new ParticleSystem(this.ctx);
+    this.addEnemiesAndProjectilesToScene()
     this.backgroundCreator = new BackgroundCreator({canvasRef:this.canvasRef, ctx: this.ctx});
     this.playerShip.particlesSystem = this.particleSystem;
     this.primerNivel.add(this.playerShip);
-    const enemy = new Enemy({
-      x:50, 
-      y:0, 
-      radius:50, 
-      speed: 5, 
-      positions:[
-        {x:50,y:50},
-        {x:300,y:50},
-        {x:50,y:50},
-        {x:400,y:200},
-        {x:500,y:50}, 
-        {x:650,y:300}], 
-        repeat:true, 
-        delayBetweenPositions:1000 });
-    enemy.projectileWasCreated = (p)=>{ this.primerNivel.add(p) }
-    enemy.ctx = this.ctx;
-    enemy.particlesSystem = this.particleSystem;
     this.playerShip.projectileWasCreated = (p)=>{ this.primerNivel.add(p) }
-    this.primerNivel.add(enemy);
     this.loop();
   }
 
