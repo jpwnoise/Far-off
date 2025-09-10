@@ -19,11 +19,22 @@ export class Game implements AfterViewInit {
   enemiesLevel_1 = enemiesLevel_1; 
   sceneManager!:SceneManager;
   /** === controlando el estado de juego "jugando/pausado" ===*/
-  isPlaying = true;
+  isPlaying = false;
+  hasTarted = false;
 
   /** === toggle para el play ===*/
+  start(){
+    this.primerNivel.playMusic();
+    this.isPlaying = true;
+    this.hasTarted = true;
+  }
   playPause() {
     this.isPlaying = !this.isPlaying;
+    if (this.isPlaying){
+      this.primerNivel.audioManager.resume();
+    }else {
+      this.primerNivel.audioManager.pause();
+    }
   }
 
   private ctx!: CanvasRenderingContext2D;
@@ -45,12 +56,21 @@ export class Game implements AfterViewInit {
 
   enemies:Enemy[] = [];
 
+  currentHittedEnemy: Enemy | null = null;
+
   /** === cuando en el enemigo lanza disparos estos tienen que se agregados a la escena para que funcionen las colisiones en ellos */
   addEnemiesAndProjectilesToScene(){
     this.enemiesLevel_1.forEach(e=>{
       e.projectileWasCreated = (p)=>{ this.primerNivel.add(p) };
       e.ctx = this.ctx; 
-      e.particlesSystem = this.particleSystem
+      e.particlesSystem = this.particleSystem;
+      e.wasHittedHandler = (stats)=>{
+        this.enemyHudVisible = true;
+        this.currentHittedEnemy = e;
+        setTimeout(()=>{
+          this.enemyHudVisible = false;
+        }, 1000)
+      }
       this.primerNivel.add(e);
     })
   }
@@ -65,7 +85,7 @@ export class Game implements AfterViewInit {
     this.backgroundCreator = new BackgroundCreator({canvasRef:this.canvasRef, ctx: this.ctx});
     this.playerShip.particlesSystem = this.particleSystem;
     this.primerNivel.add(this.playerShip);
-    this.playerShip.projectileWasCreated = (p)=>{ this.primerNivel.add(p) }
+    this.playerShip.projectileWasCreated = (p)=>{ this.primerNivel.add(p) };
     this.loop();
   }
 
@@ -95,6 +115,8 @@ export class Game implements AfterViewInit {
       this.primerNivel.update()
       this.particleSystem.update();
     }
+
+    this.backgroundCreator.update();
   }
 
   ngOnDestroy(): void {

@@ -28,6 +28,7 @@ export class Enemy extends ObjectWithBehavior implements iCollidable {
     public scene!: Scene;
     private spriteManager = new SpriteManager();
     public usingSprites = true;
+    public name:string = 'Enemy'
 
     private initColliders() {
         this.squareColliderManager.addCollider(new SquareCollider(this, 10, 20, 0, 15));
@@ -88,7 +89,7 @@ export class Enemy extends ObjectWithBehavior implements iCollidable {
                 this.stats.takeDamage(5);
                 this.lastHitOwner = other;
                 other.active = false; // destruimos el proyectil
-                this.particlesSystem.spawn(other.x, other.y, [255, 165, 0, 1], [255, 0, 0, 0], 5);
+                this.particlesSystem.spawn(other.x, other.y, [255, 165, 0, 1], [255, 0, 0, 0], 5,2,1);
                 this.wasHittedHandler(this.stats);
                 this.isFlashingDamage = true;
                 this.damageFlashStartTime = Date.now();
@@ -123,6 +124,10 @@ export class Enemy extends ObjectWithBehavior implements iCollidable {
 
     whenDie() {
         this.active = false;
+        const sprite = this.spriteManager.getCurrentSprite()!;
+        const xPos = this.x + sprite.width / 2;
+        const yPos = this.y + sprite.height / 2;
+        this.particlesSystem.spawn( xPos, yPos, [255,100,255,1],[0,0,255,.2],60,3,5); 
     }
 
 

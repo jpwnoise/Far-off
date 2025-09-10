@@ -47,3 +47,5 @@ enemiesLevel_1.push(new Enemy({
     repeat: true,
     delayBetweenPositions: 1000
 }) );
+
+enemiesLevel_1.forEach((e)=>{e.name = 'Aetheron - ' + e.identifier})

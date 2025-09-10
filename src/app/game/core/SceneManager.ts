@@ -2,13 +2,16 @@ import { ElementRef } from "@angular/core";
 import { GameObject } from "../objects/GameObject";
 import { CollisionSystem } from "./CollisitionSystem";
 import { Proyectile } from "../objects/Proyectile";
+import { AudioManager } from "./AudioManager";
 
 export class SceneManager {
-  public scenes = []
+  public scenes = [];
+
 
   constructor(
     public canvas: ElementRef<HTMLCanvasElement>,
-    public ctx: CanvasRenderingContext2D) {
+    public ctx: CanvasRenderingContext2D,
+  ) {
   }
 }
 
@@ -17,6 +20,17 @@ export class SceneManager {
 export class Scene {
 
   gameObjects: GameObject[] = [];
+  private musicLevel!: AudioBuffer;
+  public audioManager!: AudioManager
+
+  playMusic(){
+    this.audioManager = new AudioManager();
+      this.audioManager.loadSound('Music/Ecos del vacio - Level 1.mp3').then((b)=>{
+        this.musicLevel = b;
+        this.playMusic();
+      });
+    this.audioManager.play(this.musicLevel,.5);
+  }
 
   update() {
     // Filtra los objetos que ya no están activos (como proyectiles desactivados)
@@ -39,7 +53,10 @@ export class Scene {
 
   constructor(
     public canvas: ElementRef<HTMLCanvasElement>,
-    public ctx: CanvasRenderingContext2D) {
+    public ctx: CanvasRenderingContext2D,
+    
+  ) {
+    
   }
 
   add(gameObject: GameObject) {

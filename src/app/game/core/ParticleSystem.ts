@@ -8,9 +8,9 @@ export class ParticleSystem {
     this.ctx = ctx;
   }
 
-  spawn(x: number, y: number, startColor: [number, number, number, number], endColor: [number, number, number, number], amount: number = 10) {
+  spawn(x: number, y: number, startColor: [number, number, number, number], endColor: [number, number, number, number], amount: number = 10, spread = 3, speed = 5) {
     for (let i = 0; i < amount; i++) {
-      this.particles.push(new Particle(x, y, [255,165,0,1], [255, 0, 0, 0] ));
+      this.particles.push(new Particle(x, y, startColor, endColor,spread, speed ));
     }
   }
 

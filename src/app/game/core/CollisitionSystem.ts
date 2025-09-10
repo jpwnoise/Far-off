@@ -28,7 +28,7 @@ export class CollisionSystem {
   }
 
 
-  /** ===== revisa colisiones en todos los objetos ===== **/
+  /** ===== revisa colisiones en todos   los objetos ===== **/
   static iterateGameObjectsForCollisions(gameObjects: GameObject[]) {
     for (let i = 0; i < gameObjects.length; i++) {
       for (let j = i + 1; j < gameObjects.length; j++) {
