@@ -26,7 +26,7 @@ export class Enemy extends ObjectWithBehavior implements iCollidable {
     public particlesSystem!: ParticleSystem;
     private shooter!: Shooter;
     public scene!: Scene;
-    private spriteManager = new SpriteManager();
+    public spriteManager = new SpriteManager();
     public usingSprites = true;
     public name:string = 'Enemy'
 

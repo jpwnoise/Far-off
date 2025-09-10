@@ -1,3 +1,4 @@
+import { Sprite } from "./core/Sprite";
 import { Enemy } from "./objects/Enemy";
 
 export const enemiesLevel_1: Enemy[] = [];
@@ -32,7 +33,11 @@ enemiesLevel_1.push(new Enemy({
     repeat: true,
     delayBetweenPositions: 1000
 }) );
-enemiesLevel_1.push(new Enemy({
+
+
+enemiesLevel_1.forEach((e)=>{e.name = 'Aetheron - ' + e.identifier})
+
+const boss_level1 = new Enemy({
     x: 50,
     y: 0,
     radius: 50,
@@ -45,7 +50,10 @@ enemiesLevel_1.push(new Enemy({
         { x: 600, y: 80 },
         { x: 650, y: 300 }],
     repeat: true,
-    delayBetweenPositions: 1000
-}) );
+    delayBetweenPositions: 1000,    
+});
 
-enemiesLevel_1.forEach((e)=>{e.name = 'Aetheron - ' + e.identifier})
+/** === borramos los sprites por defecto === */
+boss_level1.spriteManager.sprites = [];
+boss_level1.spriteManager.addSprite(new Sprite('Boss-level-1_biodestructor.png',400,400));
+enemiesLevel_1.push( boss_level1 );
