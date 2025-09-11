@@ -144,12 +144,16 @@ export class Enemy extends ObjectWithBehavior implements iCollidable {
         this.updateSpriteByLife();
     }
 
+    //** === bandera para controlar el dibujado de las colisiones === */
+    drawCollider = false;
+
+    /** === dibuja lo referente al enemigo === */
     override draw() {
         super.draw();
         this.drawEnemy();
         this.squareColliderManager.colliders.forEach(c => {
             c.ctx = this.ctx;
-            //c.d7raw()
+            if (this.drawCollider){ c.draw() }
         })
     }
 

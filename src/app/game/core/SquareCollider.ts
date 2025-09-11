@@ -62,9 +62,8 @@ export class SquareColliderManager extends GameObject {
         this.colliders.push(collider);
     }
 
-    // Dibuja todos los colliders para debug
+    /**  === Dibuja todos los colliders para debug === */
     override draw() {
-
         const color: string = 'red'
         super.draw();
         this.validateCtx();
