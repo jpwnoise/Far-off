@@ -62,9 +62,12 @@ const boss_level1 = new Enemy({
 /** === borramos los sprites por defecto === */
 boss_level1.spriteManager.sprites = [];
 boss_level1.spriteManager.addSprite(new Sprite('Boss-level-1_biodestructor.png',400,400));
+boss_level1.stats.health = 500;
 
 //**== agregamos los colisionadores adecuados para el sprite == */
 boss_level1.squareColliderManager.colliders = [];
 boss_level1.squareColliderManager.colliders.push(new SquareCollider(boss_level1,110,370,150,20,'green'));
+boss_level1.squareColliderManager.colliders.push(new SquareCollider(boss_level1,25,260,125,80,'green'));
+boss_level1.squareColliderManager.colliders.push(new SquareCollider(boss_level1,25,260,260,80,'red'));
 boss_level1.drawCollider = true; 
 enemiesLevel_1.push( boss_level1 );
