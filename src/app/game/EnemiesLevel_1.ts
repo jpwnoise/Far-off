@@ -3,7 +3,7 @@ import { Enemy } from "./objects/Enemy";
 
 export const enemiesLevel_1: Enemy[] = [];
 
-enemiesLevel_1.push(new Enemy({
+const enemy1 = new Enemy({
     x: 50,
     y: 0,
     radius: 50,
@@ -17,7 +17,11 @@ enemiesLevel_1.push(new Enemy({
         { x: 650, y: 300 }],
     repeat: true,
     delayBetweenPositions: 1000
-}) )
+});
+enemy1.spriteManager.sprites = [];
+enemy1.spriteManager.addSprite(new Sprite('Alien 3.png',100,100))
+
+enemiesLevel_1.push( enemy1)
 enemiesLevel_1.push(new Enemy({
     x: 50,
     y: 0,

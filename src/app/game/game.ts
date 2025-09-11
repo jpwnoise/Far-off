@@ -22,12 +22,13 @@ export class Game implements AfterViewInit {
   isPlaying = false;
   hasTarted = false;
 
-  /** === toggle para el play ===*/
   start(){
     this.primerNivel.playMusic();
     this.isPlaying = true;
     this.hasTarted = true;
   }
+  
+  /** === toggle para el play ===*/
   playPause() {
     this.isPlaying = !this.isPlaying;
     if (this.isPlaying){

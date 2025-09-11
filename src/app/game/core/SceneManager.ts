@@ -20,16 +20,15 @@ export class SceneManager {
 export class Scene {
 
   gameObjects: GameObject[] = [];
-  private musicLevel!: AudioBuffer;
+  private musicLeve1!: AudioBuffer;
   public audioManager!: AudioManager
 
   playMusic(){
     this.audioManager = new AudioManager();
       this.audioManager.loadSound('Music/Ecos del vacio - Level 1.mp3').then((b)=>{
-        this.musicLevel = b;
-        this.playMusic();
+        this.musicLeve1 = b;
+        this.audioManager.play(this.musicLeve1,.5);
       });
-    this.audioManager.play(this.musicLevel,.5);
   }
 
   update() {

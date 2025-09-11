@@ -42,6 +42,7 @@ export class BackgroundCreator {
 
     initCuerposCelestes() {
         this.cuerposCelestes.push(new CelestialBody('Galaxia-1.png', 100, 100, { x:100, y:150 }, { x:0, y:.1 } ));
+        this.cuerposCelestes.push(new CelestialBody('Planeta.png', 300, 300, { x:800, y:300 }, { x:0, y:.2 } ));
     }
 
     /** ===  crea "estrellas" (puntos blancos en la negrura del espacio) === */
