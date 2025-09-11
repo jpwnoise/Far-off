@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { Ship } from './objects/Ship';
-import { InputHandler } from './core/InputHandler';
+import { TextAnimation } from './TextAnimation';
 import { ParticleSystem } from './core/ParticleSystem';
 import { AudioManager } from './core/AudioManager';
 import { Enemy } from './objects/Enemy';
@@ -18,14 +18,23 @@ export class Game implements AfterViewInit {
 
   enemiesLevel_1 = enemiesLevel_1; 
   sceneManager!:SceneManager;
+
   /** === controlando el estado de juego "jugando/pausado" ===*/
   isPlaying = false;
   hasTarted = false;
+  isStartButtonPressed: boolean = false;
 
   start(){
     this.primerNivel.playMusic();
-    this.isPlaying = true;
-    this.hasTarted = true;
+    this.titleAnimation.movementDirection = 'right';
+    this.subTitle.movementDirection = 'left';
+    this.titleAnimation.fadeOut = true;
+    this.subTitle.fadeOut = true;
+
+    setTimeout(() => {
+      this.isPlaying = true;
+      this.hasTarted = true;
+    }, 4000);
   }
   
   /** === toggle para el play ===*/
@@ -48,7 +57,7 @@ export class Game implements AfterViewInit {
   public enemyHudVisible = false;
 
   constructor() {
-    this.playerShip = new Ship({ x: 200, y: 550, radius: 20, speed: 5 });
+    this.playerShip = new Ship({ x: 665 , y: 700, radius: 20, speed: 5 });
   } //fin constructor 
 
   primerNivel!:Scene; 
@@ -58,6 +67,82 @@ export class Game implements AfterViewInit {
   enemies:Enemy[] = [];
 
   currentHittedEnemy: Enemy | null = null;
+
+  private titleAnimation!: TextAnimation;
+  private subTitle!: TextAnimation;
+
+  
+  /** === se implementa el metodo de angular para cuando los elementos fueron renderizados ===  */
+  ngAfterViewInit(): void {
+    const canvas = this.canvasRef.nativeElement;
+    this.ctx = canvas.getContext('2d')!;
+
+    this.titleAnimation = new TextAnimation(this.ctx,'Far-off','50px', { r: 255, g: 255, b: 255 }, 0, 0, 8000, 0);
+    this.titleAnimation.fadeOut = false;
+    
+    this.subTitle = new TextAnimation(this.ctx,'El silencio del abismo', '25px', { r: 255, g: 0, b: 0 }, 0, 40, 8000, 3000);
+    this.subTitle.fadeOut = false; 
+    
+
+    //=== se agrega un fondo negro para ubicar el área del canvas ===
+    this.ctx.fillStyle = "black";
+    this.ctx.fillRect(0, 0, canvas.width, canvas.height);
+    this.sceneManager = new SceneManager(this.canvasRef,this.ctx);
+    this.primerNivel = new Scene(this.canvasRef,this.ctx);
+    this.particleSystem = new ParticleSystem(this.ctx);
+    this.addEnemiesAndProjectilesToScene()
+    this.backgroundCreator = new BackgroundCreator({canvasRef:this.canvasRef, ctx: this.ctx});
+    this.playerShip.particlesSystem = this.particleSystem;
+    this.primerNivel.add(this.playerShip);
+    this.playerShip.projectileWasCreated = (p)=>{ this.primerNivel.add(p) };
+    this.loop();
+  }
+
+  
+
+  /** === el loop principal del juego se ejecuta cada frame */
+  private loop = () => {
+    this.update();
+    this.draw();
+    this.animationId = requestAnimationFrame(this.loop);
+  }
+
+  
+  /** === actualización de todo el juego moviento, disparo etc === */
+  private update() {
+
+    this.titleAnimation.update(); 
+    this.subTitle.update();
+
+    //si no esta en pausa el juego sigue operando
+    if (this.isPlaying) {
+      this.primerNivel.update()
+      this.particleSystem.update();
+    }
+    
+    this.backgroundCreator.update();
+  }
+
+  /** === dibujado o renderizado de todo el juego === */
+  private draw() {
+    const canvas = this.canvasRef.nativeElement;
+    this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+    this.ctx.fillStyle = 'black';
+    this.ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    this.titleAnimation.draw();
+    this.subTitle.draw(); 
+    //si no esta en pausa, renderiza
+    if (this.isPlaying) {
+      this.backgroundCreator.drawBackground();
+      this.primerNivel.draw();
+      this.particleSystem.draw();
+    }
+  }
+
+  ngOnDestroy(): void {
+    cancelAnimationFrame(this.animationId);
+  }
 
   /** === cuando en el enemigo lanza disparos estos tienen que se agregados a la escena para que funcionen las colisiones en ellos */
   addEnemiesAndProjectilesToScene(){
@@ -76,51 +161,4 @@ export class Game implements AfterViewInit {
     })
   }
 
-  ngAfterViewInit(): void {
-    const canvas = this.canvasRef.nativeElement;
-    this.ctx = canvas.getContext('2d')!;
-    this.sceneManager = new SceneManager(this.canvasRef,this.ctx);
-    this.primerNivel = new Scene(this.canvasRef,this.ctx);
-    this.particleSystem = new ParticleSystem(this.ctx);
-    this.addEnemiesAndProjectilesToScene()
-    this.backgroundCreator = new BackgroundCreator({canvasRef:this.canvasRef, ctx: this.ctx});
-    this.playerShip.particlesSystem = this.particleSystem;
-    this.primerNivel.add(this.playerShip);
-    this.playerShip.projectileWasCreated = (p)=>{ this.primerNivel.add(p) };
-    this.loop();
-  }
-
-  private loop = () => {
-    this.update();
-    this.draw();
-    this.animationId = requestAnimationFrame(this.loop);
-  }
-
-  /** === dibujado o renderizado de todo el juego === */
-  private draw() {
-    const canvas = this.canvasRef.nativeElement;
-    //si no esta en pausa, renderiza
-    if (this.isPlaying) {
-      this.ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      this.backgroundCreator.drawBackground();
-      this.primerNivel.draw();
-      this.particleSystem.draw();
-    }
-  }
-
-  /** === actualización de todo el juego moviento, disparo etc === */
-  private update() {
-    //si no esta en pausa el juego sigue operando
-    if (this.isPlaying) {
-      this.primerNivel.update()
-      this.particleSystem.update();
-    }
-
-    this.backgroundCreator.update();
-  }
-
-  ngOnDestroy(): void {
-    cancelAnimationFrame(this.animationId);
-  }
 }

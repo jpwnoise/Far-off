@@ -11,6 +11,9 @@
 
 .stats
     font-family: 'Audiowide', cursive
+    position: absolute
+    top: 2px
+
 
 #tsparticles-container 
   pointer-events: none
@@ -39,3 +42,35 @@
   height: 100%
   background: rgba(255, 0, 0, 0.8) 
   transition: width 0.3s ease 
+
+.startButton
+  position: absolute
+  bottom: calc( 50% - 100px ) 
+  left: 50%
+  transform: translateX(-50%)
+
+.startButton button
+  font-family: 'Audiowide'
+  background-color: black
+  color: rgb(80, 80, 255)
+  border: 1px solid rgb(80, 80, 255 )
+  opacity: 0
+  padding: 10px
+  border-radius: .5em
+  animation: fadedButton 4s forwards 4s
+  transition: transform .5s
+
+.startButton button:hover
+  background-color: rgb(15, 15, 48)
+  transform: translateY(-5px)
+
+.startButtonPressed
+  background-color: rgb(183, 183, 251) !important
+
+@keyframes fadedButton 
+  from 
+    opacity: 0
+  to
+    opacity: 1
+
+  
