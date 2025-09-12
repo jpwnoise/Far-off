@@ -98,9 +98,15 @@ export class BackgroundCreator {
         this.validateCanvas();
         const canvas = this.canvasRef.nativeElement;
         this.validateCtx();
+
+        //lo negro del universo 
         this.ctx.fillStyle = 'black';
         this.ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        //estrellas
         this.drawStars();
+
+        //cuerpos celestes
         this.drawCuerposCelestes();
 
     }

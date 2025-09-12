@@ -34,6 +34,7 @@ export class Game implements AfterViewInit {
     setTimeout(() => {
       this.isPlaying = true;
       this.hasTarted = true;
+      this.addEnemiesAndProjectilesToScene();
     }, 4000);
   }
   
@@ -57,14 +58,12 @@ export class Game implements AfterViewInit {
   public enemyHudVisible = false;
 
   constructor() {
-    this.playerShip = new Ship({ x: 665 , y: 700, radius: 20, speed: 5 });
+    this.playerShip = new Ship({ x: 665 , y: 450 , radius: 20, speed: 5 });
   } //fin constructor 
 
   primerNivel!:Scene; 
 
   playerShip!:Ship; 
-
-  enemies:Enemy[] = [];
 
   currentHittedEnemy: Enemy | null = null;
 
@@ -90,9 +89,8 @@ export class Game implements AfterViewInit {
     this.sceneManager = new SceneManager(this.canvasRef,this.ctx);
     this.primerNivel = new Scene(this.canvasRef,this.ctx);
     this.particleSystem = new ParticleSystem(this.ctx);
-    this.addEnemiesAndProjectilesToScene()
     this.backgroundCreator = new BackgroundCreator({canvasRef:this.canvasRef, ctx: this.ctx});
-    this.playerShip.particlesSystem = this.particleSystem;
+    this.playerShip.addParticleSystem(this.particleSystem);
     this.primerNivel.add(this.playerShip);
     this.playerShip.projectileWasCreated = (p)=>{ this.primerNivel.add(p) };
     this.loop();
@@ -118,9 +116,9 @@ export class Game implements AfterViewInit {
     if (this.isPlaying) {
       this.primerNivel.update()
       this.particleSystem.update();
+      this.backgroundCreator.update();
     }
     
-    this.backgroundCreator.update();
   }
 
   /** === dibujado o renderizado de todo el juego === */
@@ -146,19 +144,21 @@ export class Game implements AfterViewInit {
 
   /** === cuando en el enemigo lanza disparos estos tienen que se agregados a la escena para que funcionen las colisiones en ellos */
   addEnemiesAndProjectilesToScene(){
-    this.enemiesLevel_1.forEach(e=>{
-      e.projectileWasCreated = (p)=>{ this.primerNivel.add(p) };
-      e.ctx = this.ctx; 
-      e.particlesSystem = this.particleSystem;
-      e.wasHittedHandler = (stats)=>{
-        this.enemyHudVisible = true;
-        this.currentHittedEnemy = e;
-        setTimeout(()=>{
-          this.enemyHudVisible = false;
-        }, 1000)
-      }
-      this.primerNivel.add(e);
-    })
+    setTimeout(()=>{
+      this.enemiesLevel_1.forEach(e=>{
+        e.projectileWasCreated = (p)=>{ this.primerNivel.add(p) };
+        e.ctx = this.ctx; 
+        e.particlesSystem = this.particleSystem;
+        e.wasHittedHandler = (stats)=>{
+          this.enemyHudVisible = true;
+          this.currentHittedEnemy = e;
+          setTimeout(()=>{
+            this.enemyHudVisible = false;
+          }, 1000)
+        }
+        this.primerNivel.add(e);
+      })//for each
+    }, 20000)
   }
 
 }

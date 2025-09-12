@@ -27,9 +27,15 @@ export class Ship extends GameObject implements iCollidable {
             this.speed = speed;
             this.stats = new Stats(100, 50, 20);
             this.audioManager.loadSound('Laser-Fire-sfx_ogg/laserfire01.ogg').then((b) => { this.laserBuffer = b });
-            this.spriteManager.addSprite(new Sprite('Sprites/PlayerShip/Ship_sprite_1.png', 100, 100));
+            this.spriteManager.addSprite(new Sprite('Sprites/PlayerShip/GraySpaceShip.png', 100, 100));
             this.squareColliderManager = new SquareColliderManager();
             this.initColliders();
+    }
+
+    createRocketsFire(){
+        const centerX = this.x + this.spriteManager.getCurrentSprite()!.width/2;
+        const centerY = this.y + this.spriteManager.getCurrentSprite()!.height / 2;
+        this.particlesSystem.emitFlame(centerX, centerY + 50,6,90,5,5 );
     }
 
     private initColliders(){
@@ -111,7 +117,6 @@ export class Ship extends GameObject implements iCollidable {
     override draw() {
         super.draw();
 
-        
         //dibujamos las balas 
         this.projectiles.forEach((e) => {
             e.draw();
@@ -130,6 +135,8 @@ export class Ship extends GameObject implements iCollidable {
             c.ctx = this.ctx;
             //c.draw()
         })
+
+        this.createRocketsFire();
     }
 
     /** === dibujar un circulo si no tiene sprite === */
@@ -144,5 +151,10 @@ export class Ship extends GameObject implements iCollidable {
     private drawSprite() {
         const sprite = this.spriteManager.getCurrentSprite();
         sprite?.draw(this.ctx, this.x, this.y);
+    }
+
+    public addParticleSystem(ps: ParticleSystem){
+        this.particlesSystem = ps;
+        this.createRocketsFire();
     }
 }
