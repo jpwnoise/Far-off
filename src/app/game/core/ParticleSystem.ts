@@ -10,7 +10,7 @@ export class ParticleSystem {
 
   spawn(x: number, y: number, startColor: [number, number, number, number], endColor: [number, number, number, number], amount: number = 10, spread = 3, speed = 5) {
     for (let i = 0; i < amount; i++) {
-      this.particles.push(new Particle(x, y, startColor, endColor, spread, speed));
+      this.particles.push(new Particle(x, y, 2, startColor, endColor, spread, speed));
     }
   }
 
@@ -23,10 +23,20 @@ export class ParticleSystem {
    * @param {number} [directionInDegrees=90] - La dirección de la flama en grados (0° = derecha, 90° = abajo).
    * @param {number} [life=50] - El tiempo de vida base de las partículas.
    * @param {number} [speed=5] - La velocidad base de las partículas.
+   * @param {[number,number,number,number]} [startColor] -color inicial de las particulas 
+   * @param {[number,number,number,number]} [endColor] -color final de las particulas 
    */
-  emitFlame(x: number, y: number, amount: number = 3, directionInDegrees: number = 90, life: number = 50, speed: number = 5) {
-    const startColor: [number, number, number, number] = [255, 165, 0, 1]; // Naranja
-    const endColor: [number, number, number, number] = [255, 0, 0, 0];   // Rojo transparente
+  emitFlame(
+    x: number, 
+    y: number, 
+    amount: number = 3, 
+    directionInDegrees: number = 90, 
+    life: number = 50, 
+    speed: number = 5,
+    startColor:[number,number,number,number] = [255, 165, 0, 1],
+    endColor  :[number,number,number,number] = [255, 0, 0, 0] , 
+    radiusMultiplier = 2
+  ) {
 
     // Convertimos los grados a radianes
     const directionInRadians = (directionInDegrees * Math.PI) / 180;
@@ -41,7 +51,7 @@ export class ParticleSystem {
       const vy = Math.sin(angle) * particleSpeed;
       
       // Creamos una nueva partícula y le asignamos la velocidad y la vida
-      const particle = new Particle(x, y, startColor, endColor, 0, 0); 
+      const particle = new Particle(x, y, radiusMultiplier, startColor, endColor, 0, 0); 
       particle.vx = vx;
       particle.vy = vy;
       

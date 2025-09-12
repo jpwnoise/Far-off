@@ -35,7 +35,8 @@ export class Ship extends GameObject implements iCollidable {
     createRocketsFire(){
         const centerX = this.x + this.spriteManager.getCurrentSprite()!.width/2;
         const centerY = this.y + this.spriteManager.getCurrentSprite()!.height / 2;
-        this.particlesSystem.emitFlame(centerX, centerY + 50,6,90,5,5 );
+        this.particlesSystem.emitFlame(centerX, centerY + 50,6,90,3,5,[0,0,255,.5],[200,200,255,.4],4 );
+        this.particlesSystem.emitFlame(centerX, centerY + 50,6,90,5,5,[200,200,0,.5]);
     }
 
     private initColliders(){

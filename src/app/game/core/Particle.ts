@@ -12,6 +12,7 @@ export class Particle {
   constructor(
     x: number,
     y: number,
+    radiusMultiplier:number = 2,
     startColor: [number, number, number, number] = [255, 165, 0, 1], // naranja
     endColor: [number, number, number, number] = [255, 0, 0, 0],     // rojo transparente
     spread: number = 2,   // 🔥 dispersión (rango mayor = explosión más abierta)
@@ -19,7 +20,7 @@ export class Particle {
   ) {
     this.x = x;
     this.y = y;
-    this.radius = Math.random() * 2 + 1;
+    this.radius = Math.random() * radiusMultiplier + 1;
 
     // Generamos un ángulo aleatorio
     const angle = Math.random() * Math.PI * 2;
