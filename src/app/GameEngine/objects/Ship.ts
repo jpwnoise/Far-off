@@ -35,8 +35,12 @@ export class Ship extends GameObject implements iCollidable {
     createRocketsFire(){
         const centerX = this.x + this.spriteManager.getCurrentSprite()!.width/2;
         const centerY = this.y + this.spriteManager.getCurrentSprite()!.height / 2;
-        this.particlesSystem.emitFlame(centerX, centerY + 50,6,90,3,5,[0,0,255,.5],[200,200,255,.4],4 );
-        this.particlesSystem.emitFlame(centerX, centerY + 50,6,90,5,5,[200,200,0,.5]);
+        try {
+            this.particlesSystem.emitFlame(centerX, centerY + 50,6,90,3,5,[0,0,255,.5],[200,200,255,.4],4 );
+            this.particlesSystem.emitFlame(centerX, centerY + 50,6,90,5,5,[200,200,0,.5]);
+        } catch (error) {
+            console.log('esperando el emisor de particulas para crear el fuego')            
+        }
     }
 
     private initColliders(){
@@ -63,6 +67,7 @@ export class Ship extends GameObject implements iCollidable {
                 this.stats.takeDamage(5);
                 this.lastHitOwner = other;
                 other.active = false; // destruimos el proyectil
+                if (this.particlesSystem)
                 this.particlesSystem.spawn(other.x, other.y, [255, 165, 0, 1], [255, 0, 0, 0], 5)
             }
         }
@@ -98,17 +103,18 @@ export class Ship extends GameObject implements iCollidable {
     /** === actualizamos todos los datos === */
     override update() {
         super.update();
-        const canvasWidth = this.canvas.nativeElement.width;
-        const canvasHeight = this.canvas.nativeElement.height;
-        this.shooting();
-        this.projectiles.forEach((e) => {
-            e.update();
-        })
-
-        if (this.input.isPressed('a') && this.x - (this.radius ?? 0) > 0) this.x -= this.speed;
-        if (this.input.isPressed('d') && this.x + (this.radius ?? 0) < canvasWidth) this.x += this.speed;
-        if (this.input.isPressed('w') && this.y - (this.radius ?? 0) > 0) this.y -= this.speed;
-        if (this.input.isPressed('s') && this.y + (this.radius ?? 0) < canvasHeight) this.y += this.speed;
+        if(!this.canvas) return;
+            const canvasWidth = this.canvas.nativeElement.width;
+            const canvasHeight = this.canvas.nativeElement.height;
+            this.shooting();
+            this.projectiles.forEach((e) => {
+                e.update();
+            })
+            
+            if (this.input.isPressed('a') && this.x - (this.radius ?? 0) > 0) this.x -= this.speed;
+            if (this.input.isPressed('d') && this.x + (this.radius ?? 0) < canvasWidth) this.x += this.speed;
+            if (this.input.isPressed('w') && this.y - (this.radius ?? 0) > 0) this.y -= this.speed;
+            if (this.input.isPressed('s') && this.y + (this.radius ?? 0) < canvasHeight) this.y += this.speed;
     }
 
     //** === para externar los proyectiles y poderlos agregarlos a la escena que es el que controla las colisiones === */

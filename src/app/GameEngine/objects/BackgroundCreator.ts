@@ -22,16 +22,11 @@ export class BackgroundCreator {
     canvasRef: ElementRef<HTMLCanvasElement> | null;
     ctx: CanvasRenderingContext2D | null;
 
-    constructor({
-        canvasRef = null,
-        ctx = null }: {
-            canvasRef?: ElementRef<HTMLCanvasElement> | null,
-            ctx?: CanvasRenderingContext2D | null
-        }) {
+    constructor({ canvasRef = null, ctx = null, stars = true, celestialBodies = true }: { canvasRef?: ElementRef<HTMLCanvasElement> | null, ctx?: CanvasRenderingContext2D | null, stars?: boolean, celestialBodies?: boolean }) {
         this.canvasRef = canvasRef;
         this.ctx = ctx;
-        this.initStars();
-        this.initCuerposCelestes();
+        if (stars) this.initStars();
+        if (celestialBodies) this.initCuerposCelestes();
     }
 
     private stars: Star[] = [];
@@ -48,7 +43,8 @@ export class BackgroundCreator {
 
     /** ===  crea "estrellas" (puntos blancos en la negrura del espacio) === */
     public initStars() {
-        this.validateCanvas();
+        if (!this.canvasRef?.nativeElement || !this.ctx) return;
+
         const canvas = this.canvasRef.nativeElement;
 
         for (let i = 0; i < this.numStars; i++) {
@@ -81,24 +77,11 @@ export class BackgroundCreator {
         })
     }
 
-    private validateCanvas(): asserts this is { canvasRef: ElementRef<HTMLCanvasElement> } {
-        if (!this.canvasRef) {
-            throw new Error('Es necesario el canvas para inicializar las estrellas');
-        }
-    }
-
-    private validateCtx(): asserts this is { ctx: CanvasRenderingContext2D } {
-        if (!this.ctx) {
-            throw new Error('No se tiene el contexto 2d para renderizar el fondo')
-        }
-    }
-
     /** === metodo para dibujar el fondo en el canvas y el contexto dado === */
     public drawBackground() {
-        this.validateCanvas();
-        const canvas = this.canvasRef.nativeElement;
-        this.validateCtx();
+        if (!this.canvasRef?.nativeElement || !this.ctx) return;
 
+        const canvas = this.canvasRef.nativeElement;
         //lo negro del universo 
         this.ctx.fillStyle = 'black';
         this.ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -108,7 +91,6 @@ export class BackgroundCreator {
 
         //cuerpos celestes
         this.drawCuerposCelestes();
-
     }
 
     /** === dibujamos puntos simulando estrellas === */
@@ -155,10 +137,6 @@ export class BackgroundCreator {
             }
         }
     }
-
-
-
-
 
     /** === dibujamos cosas como planetas, galaxias, estaciones === */
     private drawCuerposCelestes() {

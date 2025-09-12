@@ -1,0 +1,22 @@
+<div class="interface">
+    <div class="canvas_container">
+        <canvas #gameCanvas width="1500" height="900"></canvas>
+        @if (hasTarted){
+        <div style="display:flex; justify-content:center; border:1px solid black">
+            <button class="play_pause" (click)="playPause()">{{isPlaying?'Pausar':'Jugar'}}</button>
+        </div>
+        }
+        @if (!hasTarted){
+        <div class="startButton">
+        
+            <button 
+                [class.startButtonPressed]="isStartButtonPressed"  
+                (mousedown)="isStartButtonPressed = true" 
+                (mouseup)="isStartButtonPressed = false"
+                (mouseleave)="isStartButtonPressed = false"
+                (click)="start()">Iniciar</button>
+        </div>
+        }
+    </div> <!-- fin del canvas container-->
+    <div></div> <!-- un elemento solo para distribuir -->
+</div>

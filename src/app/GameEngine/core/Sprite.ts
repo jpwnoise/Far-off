@@ -24,6 +24,7 @@ export class Sprite {
     degrees: number = 0,
     tintColor: string | null = null // Parámetro para el color
 ) {
+    if (!ctx) return;
     const centerX = x + this.width / 2;
     const centerY = y + this.height / 2;
     const radians = degrees * (Math.PI / 180);
