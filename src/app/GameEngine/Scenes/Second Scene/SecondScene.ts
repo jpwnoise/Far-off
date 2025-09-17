@@ -4,6 +4,8 @@ import { Scene } from "../../core/SceneManager";
 import { ParticleSystem } from "../../core/ParticleSystem";
 import { Sprite } from "../../core/Sprite";
 import { Ship } from "../../objects/Ship";
+import { enemiesLevel_1 } from "../First Scene/EnemiesLevel_1";
+
 
 export const createSecondScene = (canvas: ElementRef<HTMLCanvasElement>, ctx: CanvasRenderingContext2D, ps: ParticleSystem): Scene => {
     const scene = new Scene(canvas, ctx, ps);
@@ -15,5 +17,9 @@ export const createSecondScene = (canvas: ElementRef<HTMLCanvasElement>, ctx: Ca
     scene.add(playerShip);
     sequencedBackground.spriteManager.addSprite(sprite);
     scene.backgroundCreator = sequencedBackground;
+     enemiesLevel_1.forEach(e=>{
+            e.particlesSystem = ps;
+            scene.add(e);
+        });    
     return scene;
 }
