@@ -3,10 +3,11 @@ import { StartMenu } from '../GameEngine/Menus/StartMenu';
 import { Scene, SceneManager } from '../GameEngine/core/SceneManager';
 import { ParticleSystem } from '../GameEngine/core/ParticleSystem';
 import { createFirstScene } from '../GameEngine/Scenes/First Scene/FirstScene';
+import { createSecondScene } from '../GameEngine/Scenes/Second Scene/SecondScene';
 
 interface GameEngineObject {
-  update: () => void;
-  draw: () => void;
+  update: (deltaTime: number) => void;
+  draw: (ctx: CanvasRenderingContext2D) => void;
 }
 @Component({
   selector: 'app-game2',
@@ -20,73 +21,82 @@ export class Game2 implements AfterViewInit, OnDestroy {
   isStartButtonPressed: boolean = false;
   @ViewChild('gameCanvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
   private animationId: number = 0;
-  private objects: GameEngineObject[] = []
+  private objects: GameEngineObject[] = [];
+  
+  // Propiedad para el tiempo del último fotograma
+  private lastTime: number = 0;
 
-
-  //** practicamente este es el punto de partida del juego por que se inicializa el canvas */
   ngAfterViewInit(): void {
     const canvas = this.canvasRef.nativeElement;
     const ctx = canvas.getContext('2d')!;
-    const particleSystem = new ParticleSystem(ctx); 
-    
-    
-    //de aqui en adelante importa el orden del código ya que es el orden de renderizado
+    const particleSystem = new ParticleSystem(ctx);
+
     const firstScene = createFirstScene(this.canvasRef, ctx, particleSystem);
     const sceneManager = new SceneManager(this.canvasRef, ctx, firstScene);
     this.objects.push(sceneManager);
-    
+
+    const secondScene = createSecondScene(this.canvasRef, ctx, particleSystem);
+    sceneManager.addScene(secondScene);
+    sceneManager.setCurrentScene(1);
+
     this.objects.push(particleSystem);
     const startMenu = new StartMenu(ctx);
     this.objects.push(startMenu);
 
-    this.loop(ctx);//debe ir al final
+    // Se inicializa el loop sin pasar el contexto
+    this.loop();
   }
 
-  /** pausa y reanudación del juego  */
-  playPause() {
-  }
+  playPause() {}
 
-  /** == inicio del juego == */
   start() {
-    this.finalAnimAndDestroyMenu(()=>{
-      this.objects.forEach(e=>{
-        if (e instanceof SceneManager){
-          e.getCurrentScene().start = true; 
+    this.finalAnimAndDestroyMenu(() => {
+      this.objects.forEach(e => {
+        if (e instanceof SceneManager) {
+          e.getCurrentScene().start = true;
         }
-      })
+      });
     });
   }
 
-  //** inicio de la animación del menu  y posteriomente elimnamos el menú de los objetos a renderizar y a actualizar */
-  finalAnimAndDestroyMenu(onDestroy:()=>void) {
-    //se activa la animación del menú
+  finalAnimAndDestroyMenu(onDestroy: () => void) {
     this.objects.forEach((e) => {
       if (e instanceof StartMenu) {
         e.startMenuMovement();
       }
     });
 
-    setTimeout(()=>{
-      //se activa la animación del menú
-      this.objects = this.objects.filter((e) => !(e instanceof StartMenu) );
+    setTimeout(() => {
+      this.objects = this.objects.filter((e) => !(e instanceof StartMenu));
       onDestroy();
-    }, 4000)
+    }, 4000);
   }
 
-  /** === el loop principal del juego se ejecuta cada frame */
-  private loop(ctx: CanvasRenderingContext2D) {
+  // === El loop principal del juego ===
+  private loop = (currentTime: number = 0) => {
+    // Si es el primer fotograma, se inicializa el tiempo
+    if (this.lastTime === 0) {
+      this.lastTime = currentTime;
+    }
+    const deltaTime = (currentTime - this.lastTime) / 1000;
+    this.lastTime = currentTime;
+
+    const ctx = this.canvasRef.nativeElement.getContext('2d')!;
+
     this.clearScreen(ctx);
-    this.update();
-    this.draw();
-    this.animationId = requestAnimationFrame(this.loop.bind(this, ctx));
+    this.update(deltaTime);
+    this.draw(ctx);
+    
+    // Aquí es donde se llama a requestAnimationFrame y se pasa el loop como callback
+    this.animationId = requestAnimationFrame(this.loop);
   }
 
-  update() {
-    this.objects.forEach((e) => { e.update() })
+  update(deltaTime: number) {
+    this.objects.forEach((e) => { e.update(deltaTime) });
   }
 
-  draw() {
-    this.objects.forEach((e) => { e.draw() })
+  draw(ctx: CanvasRenderingContext2D) {
+    this.objects.forEach((e) => { e.draw(ctx) });
   }
 
   clearScreen(ctx: CanvasRenderingContext2D) {
@@ -99,5 +109,4 @@ export class Game2 implements AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     cancelAnimationFrame(this.animationId);
   }
-
 }

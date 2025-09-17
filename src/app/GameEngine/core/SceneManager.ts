@@ -6,8 +6,9 @@ import { AudioManager } from "./AudioManager";
 import { Enemy } from "../objects/Enemy";
 import { ParticleSystem } from "./ParticleSystem";
 import { BackgroundCreator } from '../objects/BackgroundCreator';
+import { SequencedBackground } from "../Animation/SequencedBackground";
 
-
+/** controlador de Escenas */
 export class SceneManager {
   public scenes: Scene[] = [];
   private currentScene: Scene;
@@ -19,6 +20,7 @@ export class SceneManager {
     this.currentScene = scene;
   }
   
+  /** agrega el contexto de dibujado a todas las escenas */
   addRenderingContext(ctx: CanvasRenderingContext2D, canvas:ElementRef<HTMLCanvasElement>) {
     this.scenes.forEach(s=>{s.ctx = ctx; s.canvas = canvas});
   }
@@ -33,6 +35,7 @@ export class SceneManager {
     return this.currentScene;
   }
 
+  /** establece la escena actual  */
   setCurrentScene(sceneIndex: number) {
     if (sceneIndex < this.scenes.length) {
       this.currentSceneIndex = sceneIndex;
@@ -41,8 +44,8 @@ export class SceneManager {
     else throw new Error('Estas tratando de establecer una escena inexistente como la principal')
   }
 
-  update(){
-    this.scenes.forEach((s)=>{s.update()})
+  update(currentTime = 0){
+    this.scenes.forEach((s)=>{s.update(currentTime)})
   }
   
   draw(){
@@ -59,7 +62,7 @@ export class Scene {
   public audioManager!: AudioManager
   public enemies: Enemy[] = [];
   particleSystem: ParticleSystem;
-  backgroundCreator: BackgroundCreator;
+  backgroundCreator: BackgroundCreator | SequencedBackground;
   start = false; 
 
   constructor(public canvas: ElementRef<HTMLCanvasElement>, public ctx: CanvasRenderingContext2D, ps: ParticleSystem) {
@@ -77,26 +80,26 @@ export class Scene {
   }
 
 
-  update() {
+  update(currentTime: number = 0) {
     if (!this.start) return; 
     // Filtra los objetos que ya no están activos (como proyectiles desactivados)
     this.gameObjects = this.gameObjects.filter(obj => obj.active);
 
     this.gameObjects.forEach((gameObj) => {
-      gameObj.update();
+      gameObj.update(currentTime);
       CollisionSystem.iterateGameObjectsForCollisions(this.gameObjects);
     });
 
     // Llama al nuevo método para eliminar proyectiles fuera del canvas
     this._checkAndRemoveOutOfBoundObjects();
-    this.backgroundCreator.update();
+    this.backgroundCreator.update(currentTime);
   }
 
 
   /** === dibujando === */
   draw() {
     if (!this.start) return; 
-    this.backgroundCreator.drawBackground();
+    this.backgroundCreator.draw();
     this.gameObjects.forEach((gameObj) => {
       gameObj.draw();
     });

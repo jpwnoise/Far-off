@@ -17,6 +17,7 @@ class CelestialBody extends Sprite {
     }
 }
 
+/** clase para crear un universo de fondo (fondo negro, estrellas, planetas, galaxias )*/
 export class BackgroundCreator {
 
     canvasRef: ElementRef<HTMLCanvasElement> | null;
@@ -78,7 +79,7 @@ export class BackgroundCreator {
     }
 
     /** === metodo para dibujar el fondo en el canvas y el contexto dado === */
-    public drawBackground() {
+    public draw() {
         if (!this.canvasRef?.nativeElement || !this.ctx) return;
 
         const canvas = this.canvasRef.nativeElement;

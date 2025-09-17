@@ -22,7 +22,7 @@ export class GameObject {
     }
 
     /** === las cosas cambiantes entre cada frame ==?*/
-    update(){
+    update(deltaTime = 0){
 
     }
 

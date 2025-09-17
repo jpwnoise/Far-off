@@ -2,7 +2,7 @@ import { Sprite } from "./Sprite";
 
 export class SpriteManager {
     public sprites: Sprite[] = [];
-    private currentIndex: number = 0;
+    public currentIndex: number = 0;
 
     // Agrega un sprite al manager
     addSprite(sprite: Sprite) {
