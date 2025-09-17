@@ -2,7 +2,7 @@ import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from '@ang
 import { StartMenu } from '../GameEngine/Menus/StartMenu';
 import { Scene, SceneManager } from '../GameEngine/core/SceneManager';
 import { ParticleSystem } from '../GameEngine/core/ParticleSystem';
-import { Ship } from '../GameEngine/objects/Ship';
+import { createFirstScene } from '../GameEngine/Scenes/First Scene/FirstScene';
 
 interface GameEngineObject {
   update: () => void;
@@ -23,24 +23,22 @@ export class Game2 implements AfterViewInit, OnDestroy {
   private objects: GameEngineObject[] = []
 
 
+  //** practicamente este es el punto de partida del juego por que se inicializa el canvas */
   ngAfterViewInit(): void {
     const canvas = this.canvasRef.nativeElement;
     const ctx = canvas.getContext('2d')!;
-    
     const particleSystem = new ParticleSystem(ctx); 
-    const firstScene = new Scene(this.canvasRef, ctx, particleSystem)
+    
+    
+    //de aqui en adelante importa el orden del código ya que es el orden de renderizado
+    const firstScene = createFirstScene(this.canvasRef, ctx, particleSystem);
     const sceneManager = new SceneManager(this.canvasRef, ctx, firstScene);
     this.objects.push(sceneManager);
-
+    
+    this.objects.push(particleSystem);
     const startMenu = new StartMenu(ctx);
     this.objects.push(startMenu);
 
-    const playerShip = new Ship({ x: 665, y: 450, radius: 20, speed: 5 });
-    playerShip.addParticleSystem(particleSystem);
-    
-    
-    playerShip.projectileWasCreated = (p) => { firstScene.add(p) };
-    firstScene.add(playerShip);
     this.loop(ctx);//debe ir al final
   }
 

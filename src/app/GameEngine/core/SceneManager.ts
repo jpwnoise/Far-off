@@ -28,6 +28,7 @@ export class SceneManager {
     this.scenes.push(scene);
   }
 
+  /** === la escena actual es la que se renderiza y este metodo te da la escena actual === */
   getCurrentScene() {
     return this.currentScene;
   }
@@ -94,16 +95,15 @@ export class Scene {
 
   /** === dibujando === */
   draw() {
-    this.backgroundCreator.drawBackground();
     if (!this.start) return; 
+    this.backgroundCreator.drawBackground();
     this.gameObjects.forEach((gameObj) => {
       gameObj.draw();
     });
 
   }
 
-
-
+  /** === se agrega al la escena un elemento nuevo para el manejo de colisiones y revisar si esta activo el objeto ===*/
   add(gameObject: GameObject) {
     gameObject.canvas = this.canvas;
     gameObject.ctx = this.ctx;
@@ -147,7 +147,7 @@ export class Scene {
         }
         this.add(e);
       })//for each
-    }, 20000)
+    }, 20000);
   }
 
 }

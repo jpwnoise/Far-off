@@ -1,6 +1,6 @@
-import { Sprite } from "./core/Sprite";
-import { SquareCollider } from "./core/SquareCollider";
-import { Enemy } from "./objects/Enemy";
+import { Sprite } from "../../core/Sprite";
+import { SquareCollider } from "../../core/SquareCollider";
+import { Enemy } from "../../objects/Enemy";
 
 export const enemiesLevel_1: Enemy[] = [];
 
