@@ -2,12 +2,11 @@
     <div class="canvas_container">
         <canvas #gameCanvas width="1500" height="900"></canvas>
         @if (hasTarted){
-        <div style="display:flex; justify-content:center; border:1px solid black">
+        <div style="position: absolute; top:0; bottom: 0; display:flex; justify-content:center; border:1px solid black">
             <button class="play_pause" (click)="playPause()">{{isPlaying?'Pausar':'Jugar'}}</button>
         </div>
         }
-        @if (!hasTarted){
-        <div class="startButton">
+        <div class="startButton" [class.active]="hasTarted"  >
         
             <button 
                 [class.startButtonPressed]="isStartButtonPressed"  
@@ -16,7 +15,14 @@
                 (mouseleave)="isStartButtonPressed = false"
                 (click)="start()">Iniciar</button>
         </div>
-        }
+
+            <div class="enemy_hud_container" [style.width.px]="currentEnemyHudWidth" [class.active]="enemyHudTransition">
+                <div [style.width.%]="currentEnemyAttacked ? (currentEnemyAttacked.stats.health / currentEnemyAttacked.stats.maxHealth) * 100 : 0"></div>
+            </div>
+            <div class="enemy_hud_container" [style.width.px]="currentEnemyHudWidth" [class.active]="enemyHudTransition" style="bottom: 20px; border-color: blue;">
+                <div style="background-color: blue; " [style.width.%]="currentEnemyAttacked ? (currentEnemyAttacked.stats.shield / currentEnemyAttacked.stats.maxShield) * 100 : 0"></div>
+            </div>
+
     </div> <!-- fin del canvas container-->
     <div></div> <!-- un elemento solo para distribuir -->
-</div>
+</div>  

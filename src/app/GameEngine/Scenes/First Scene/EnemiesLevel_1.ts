@@ -61,7 +61,9 @@ const boss_level1 = new Enemy({
 /** === borramos los sprites por defecto === */
 boss_level1.spriteManager.sprites = [];
 boss_level1.spriteManager.addSprite(new Sprite('Boss-level-1_biodestructor.png',400,400));
-boss_level1.stats.health = 500;
+const bossLife  = 500;
+boss_level1.stats.maxHealth = bossLife;
+boss_level1.stats.health = bossLife;
 
 //**== agregamos los colisionadores adecuados para el sprite == */
 boss_level1.squareColliderManager.colliders = [];

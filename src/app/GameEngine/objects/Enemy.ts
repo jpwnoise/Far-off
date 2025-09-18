@@ -70,7 +70,9 @@ export class Enemy extends ObjectWithBehavior implements iCollidable {
         this.spriteManager.addSprite(new Sprite('Sprites/Alien/Alien Ship Sprite 6.png', 100, 100))
         this.initColliders();
     }
+    
 
+    /**el objeto  */
     lastHitOwner?: GameObject;
 
     onCollision(other: GameObject): void {
@@ -82,7 +84,7 @@ export class Enemy extends ObjectWithBehavior implements iCollidable {
                 this.lastHitOwner = other;
                 other.active = false; // destruimos el proyectil
                 this.particlesSystem.spawn(other.x, other.y, [255, 165, 0, 1], [255, 0, 0, 0], 5, 2, 1);
-                this.wasHittedHandler(this.stats);
+                this.wasHittedHandler();
                 this.isFlashingDamage = true;
                 this.damageFlashStartTime = Date.now();
 
@@ -112,7 +114,7 @@ export class Enemy extends ObjectWithBehavior implements iCollidable {
     }
 
     /** === funcion para exponer el evento de que fue golpeado === */
-    public wasHittedHandler: (stats: Stats) => void = () => { }
+    public wasHittedHandler: () => void = () => { }
 
     whenDie() {
         this.active = false;

@@ -1,4 +1,3 @@
-import { Game } from "../../game/game";
 import { GameObject } from "../objects/GameObject";
 
 // Un solo rectángulo de colisión

@@ -4,6 +4,7 @@ import { Scene, SceneManager } from '../GameEngine/core/SceneManager';
 import { ParticleSystem } from '../GameEngine/core/ParticleSystem';
 import { createFirstScene } from '../GameEngine/Scenes/First Scene/FirstScene';
 import { createSecondScene } from '../GameEngine/Scenes/Second Scene/SecondScene';
+import { Enemy } from '../GameEngine/objects/Enemy';
 
 interface GameEngineObject {
   update: (deltaTime: number) => void;
@@ -21,13 +22,43 @@ export class Game2 implements AfterViewInit, OnDestroy {
   isStartButtonPressed: boolean = false;
   @ViewChild('gameCanvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
   private animationId: number = 0;
+
+  /** contiene los objetos a ser actualizados y dibujados por el loop del juego */
   private objects: GameEngineObject[] = [];
-  
+
+  /** el enemigo actual que esta recibiendo daño */
+  public currentEnemyAttacked: Enemy | null = null;
+  public enemyHudTransition = false; 
+
   // Propiedad para el tiempo del último fotograma
   private lastTime: number = 0;
 
+  /** el maximo del HUD del enemigo en pixeles 
+   * el cual será calculado con un % del tamaño del canvas para mantener la proporción cuando el canvas cambie
+  */
+  maxHudWidth:number = 0;
+
+  /** obtienes la proporción de HUD
+   *  esto para hacer lo siguiente:
+   *  los enemigos con mas vida o mas resistentes como los jefes 
+   *  tienen barras de vida mas largas 
+   *  y los mas debiles barras mas pequeñas 
+  */
+  get currentEnemyHudWidth(): number {
+    if (!this.currentEnemyAttacked) return 0;
+
+    const vidaMax = this.currentEnemyAttacked.stats.maxHealth;
+    // Ajusta la escala según la vida máxima (por ejemplo, enemigos más fuertes = barra más larga)
+    // Aquí puedes definir tu fórmula de proporcionalidad
+    const factor = vidaMax / 100; // ejemplo: si vidaMax = 200 -> factor = 2
+    const width = Math.min(this.maxHudWidth, factor * 100);
+    return width;
+  }
+
+  /** inicializaciones ya cuando los elementos son visibles  */
   ngAfterViewInit(): void {
     const canvas = this.canvasRef.nativeElement;
+    this.maxHudWidth = canvas.width * .8; // el tamaño maximo del hud del enemigo mas grande 
     const ctx = canvas.getContext('2d')!;
     const particleSystem = new ParticleSystem(ctx);
 
@@ -39,38 +70,47 @@ export class Game2 implements AfterViewInit, OnDestroy {
     sceneManager.addScene(secondScene);
     sceneManager.setCurrentScene(1);
 
+    //asignamos la función que establece el actualizador del enemigo atacado 
+    //esto para visualizar la vida del enemigo en el juego 
+    sceneManager.getCurrentScene().gameObjects.forEach((obj) => { if (obj instanceof Enemy) { obj.wasHittedHandler = ()=>{this.setEnemy(obj)} } });
+    
+    //se agrega particleSystem por que tambien necesita ser actualizado y dibujado 
     this.objects.push(particleSystem);
     const startMenu = new StartMenu(ctx);
     this.objects.push(startMenu);
-
+    
     // Se inicializa el loop sin pasar el contexto
     this.loop();
   }
+  
+  //establecemos el enemigo que fue golpeado
+  setEnemy(obj:Enemy){
+    this.currentEnemyAttacked = obj;
+    this.enemyHudTransition = true;
+    setTimeout(()=>{
+      this.enemyHudTransition = false;
+    }, 1000)
+  }
 
-  playPause() {}
+  playPause() { }
 
+  /**inicio del juego */
   start() {
+
+    //para activar animaciones 
+    this.hasTarted = true;
+
+    //cambiar entre el menu y la escena 
     this.finalAnimAndDestroyMenu(() => {
       this.objects.forEach(e => {
         if (e instanceof SceneManager) {
           e.getCurrentScene().start = true;
+          this.isStartButtonPressed = true;
         }
       });
     });
   }
 
-  finalAnimAndDestroyMenu(onDestroy: () => void) {
-    this.objects.forEach((e) => {
-      if (e instanceof StartMenu) {
-        e.startMenuMovement();
-      }
-    });
-
-    setTimeout(() => {
-      this.objects = this.objects.filter((e) => !(e instanceof StartMenu));
-      onDestroy();
-    }, 4000);
-  }
 
   // === El loop principal del juego ===
   private loop = (currentTime: number = 0) => {
@@ -86,7 +126,7 @@ export class Game2 implements AfterViewInit, OnDestroy {
     this.clearScreen(ctx);
     this.update(deltaTime);
     this.draw(ctx);
-    
+
     // Aquí es donde se llama a requestAnimationFrame y se pasa el loop como callback
     this.animationId = requestAnimationFrame(this.loop);
   }
@@ -109,4 +149,20 @@ export class Game2 implements AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     cancelAnimationFrame(this.animationId);
   }
+
+  /** inicia la animacion final antes de liberar la memoria del mismo */
+  finalAnimAndDestroyMenu(onDestroy: () => void) {
+    this.objects.forEach((e) => {
+      if (e instanceof StartMenu) {
+        e.startMenuMovement();
+      }
+    });
+
+    //la animacion dura 4 segundos por eso el delay en la destruccion 
+    setTimeout(() => {
+      this.objects = this.objects.filter((e) => !(e instanceof StartMenu));
+      onDestroy();
+    }, 4000);
+  }
+
 }

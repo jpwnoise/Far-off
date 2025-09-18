@@ -14,18 +14,33 @@
     position: absolute
     top: 2px
 
-
 #tsparticles-container 
   pointer-events: none
 
 .enemy_hud_container
+    font-family: 'Audiowide', cursive
     position: absolute
-    top: 0
-    right: 0
-    width: 100px
-    height: 600px
+    bottom: 40px
+    left: 50%
+    height: 10px
+    width: 900px
+    overflow: hidden
+    border-radius: .3em
+    transform: translateX(-50%)
     color: red
-    margin: 10px
+    border: 1px solid red
+    box-sizing: border-box
+    opacity: 0
+    transition: opacity .5s
+    background-color: rgba(0,0,0,.2)
+
+.enemy_hud_container.active 
+  opacity: 1
+
+.enemy_hud_container > div 
+  height: 100%
+  background-color: #f00
+  width: 0%
 
 .hud_label 
   margin-bottom: 5px
@@ -48,6 +63,8 @@
   bottom: calc( 50% - 100px ) 
   left: 50%
   transform: translateX(-50%)
+  &.active
+    animation: disapearToBottom 1s ease forwards
 
 .startButton button
   font-family: 'Audiowide'
@@ -57,8 +74,8 @@
   opacity: 0
   padding: 10px
   border-radius: .5em
-  animation: fadedButton 4s forwards 4s
-  transition: transform .5s
+  animation: fadedButton 4s forwards 4s, loopGlow 2s infinite alternate ease-in-out 
+  transition: transform .5s, 
 
 .startButton button:hover
   background-color: rgb(15, 15, 48)
@@ -72,3 +89,22 @@
     opacity: 0
   to
     opacity: 1
+
+@keyframes loopGlow 
+  0% 
+    box-shadow: 0 0 5px rgba(80, 80, 255, 0.2)
+  
+  50% 
+    box-shadow: 0 0 25px rgba(80, 80, 255, 0.9)
+  
+  100% 
+    box-shadow: 0 0 5px rgba(80, 80, 255, 0.2)
+  
+@keyframes disapearToBottom
+  0% 
+    transform: translate(-50%, 0%)
+    opacity: 1
+    
+  100%
+    transform: translate(-50%, 100%)
+    opacity: 0

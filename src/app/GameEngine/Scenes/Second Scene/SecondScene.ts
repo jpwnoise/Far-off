@@ -10,12 +10,14 @@ import { enemiesLevel_1 } from "../First Scene/EnemiesLevel_1";
 export const createSecondScene = (canvas: ElementRef<HTMLCanvasElement>, ctx: CanvasRenderingContext2D, ps: ParticleSystem): Scene => {
     const scene = new Scene(canvas, ctx, ps);
     const sequencedBackground = new SequencedBackground(ctx);
-    const sprite = new Sprite('Sprites/Scene props/RedPlanet-floor-tileable 2.png', ctx.canvas.width, ctx.canvas.height);
     const playerShip = new Ship({ x: 665, y: 450, radius: 20, speed: 5 });
     playerShip.addParticleSystem(ps);
     playerShip.projectileWasCreated = (p) => { scene.add(p) };
     scene.add(playerShip);
-    sequencedBackground.spriteManager.addSprite(sprite);
+    sequencedBackground.spriteManager.addSprite(new Sprite('Sprites/Scene props/RedPlanet-floor-tileable 2.png', ctx.canvas.width, ctx.canvas.height));
+    sequencedBackground.spriteManager.addSprite(new Sprite('Sprites/Scene props/RedPlanet-transition.png', ctx.canvas.width, ctx.canvas.height));
+    sequencedBackground.spriteManager.addSprite(new Sprite('Sprites/Scene props/RedPlanet-dark.png', ctx.canvas.width, ctx.canvas.height));
+    sequencedBackground.spriteManager.addSprite(new Sprite('Sprites/Scene props/RedPlanet-dark 2.png', ctx.canvas.width, ctx.canvas.height));
     scene.backgroundCreator = sequencedBackground;
      enemiesLevel_1.forEach(e=>{
             e.particlesSystem = ps;
