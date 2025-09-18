@@ -58,6 +58,8 @@ const boss_level1 = new Enemy({
     delayBetweenPositions: 1000,    
 });
 
+boss_level1.name = 'Boss: Gargot-fungi'; 
+
 /** === borramos los sprites por defecto === */
 boss_level1.spriteManager.sprites = [];
 boss_level1.spriteManager.addSprite(new Sprite('Boss-level-1_biodestructor.png',400,400));

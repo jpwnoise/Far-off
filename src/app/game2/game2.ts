@@ -5,6 +5,7 @@ import { ParticleSystem } from '../GameEngine/core/ParticleSystem';
 import { createFirstScene } from '../GameEngine/Scenes/First Scene/FirstScene';
 import { createSecondScene } from '../GameEngine/Scenes/Second Scene/SecondScene';
 import { Enemy } from '../GameEngine/objects/Enemy';
+import { Ship } from '../GameEngine/objects/Ship';
 
 interface GameEngineObject {
   update: (deltaTime: number) => void;
@@ -22,6 +23,9 @@ export class Game2 implements AfterViewInit, OnDestroy {
   isStartButtonPressed: boolean = false;
   @ViewChild('gameCanvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
   private animationId: number = 0;
+
+  /** referencia al jugador  */
+  public player: Ship | null = null; 
 
   /** contiene los objetos a ser actualizados y dibujados por el loop del juego */
   private objects: GameEngineObject[] = [];
@@ -69,6 +73,12 @@ export class Game2 implements AfterViewInit, OnDestroy {
     const secondScene = createSecondScene(this.canvasRef, ctx, particleSystem);
     sceneManager.addScene(secondScene);
     sceneManager.setCurrentScene(1);
+
+    sceneManager.getCurrentScene().gameObjects.forEach((e)=>{
+      if (e instanceof Ship){
+        this.player = e; 
+      }
+    })
 
     //asignamos la función que establece el actualizador del enemigo atacado 
     //esto para visualizar la vida del enemigo en el juego 
