@@ -153,6 +153,7 @@ export class Enemy extends ObjectWithBehavior implements iCollidable {
         
     }
 
+    /** dibuja el enemigo, ya sea con sprite o como un círculo rojo */
     drawEnemy() {
         if (!this.usingSprites) {
             this.ctx.fillStyle = 'red';

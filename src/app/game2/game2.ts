@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { StartMenu } from '../GameEngine/Menus/StartMenu';
 import { Scene, SceneManager } from '../GameEngine/core/SceneManager';
 import { ParticleSystem } from '../GameEngine/core/ParticleSystem';
@@ -24,7 +24,9 @@ export class Game2 implements AfterViewInit, OnDestroy {
   @ViewChild('gameCanvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
   private animationId: number = 0;
 
-  /** referencia al jugador  */
+  constructor(private cd: ChangeDetectorRef) { }
+
+  /**Se nececita referencia al jugador para mostrar el HUD*/
   public player: Ship | null = null; 
 
   /** contiene los objetos a ser actualizados y dibujados por el loop del juego */
@@ -74,9 +76,11 @@ export class Game2 implements AfterViewInit, OnDestroy {
     sceneManager.addScene(secondScene);
     sceneManager.setCurrentScene(1);
 
+    //obtenemos la referencia a la nave del jugador de la escena actual
     sceneManager.getCurrentScene().gameObjects.forEach((e)=>{
       if (e instanceof Ship){
         this.player = e; 
+        this.cd.detectChanges(); //actualizamos la vista para que el HUD del jugador sepa que la nave ya fue creada
       }
     })
 
@@ -114,7 +118,7 @@ export class Game2 implements AfterViewInit, OnDestroy {
     this.finalAnimAndDestroyMenu(() => {
       this.objects.forEach(e => {
         if (e instanceof SceneManager) {
-          e.getCurrentScene().start = true;
+          e.getCurrentScene().init();
           this.isStartButtonPressed = true;
         }
       });

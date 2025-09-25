@@ -7,6 +7,7 @@ import { Enemy } from "../objects/Enemy";
 import { ParticleSystem } from "./ParticleSystem";
 import { BackgroundCreator } from '../objects/BackgroundCreator';
 import { SequencedBackground } from "../Animation/SequencedBackground";
+import { EnemiesWavesManager } from "../objects/EnemiesWavesManager";
 
 /** controlador de Escenas */
 export class SceneManager {
@@ -57,11 +58,13 @@ export class SceneManager {
 /** escenas o niveles del juego algo que se va a ir cargando dependiendo del momento adecuado */
 export class Scene {
 
+  /** todos los objetos de la escena  */
   gameObjects: GameObject[] = [];
   private musicLeve1!: AudioBuffer;
   public audioManager!: AudioManager
   particleSystem: ParticleSystem;
   backgroundCreator: BackgroundCreator | SequencedBackground;
+  waveManager: EnemiesWavesManager; 
 
   /** para indicar al nivel que inicie con la actualización en cada frame y el dibujado de los componentes de la escena*/
   start = false;
@@ -72,8 +75,14 @@ export class Scene {
   constructor(public canvas: ElementRef<HTMLCanvasElement>, public ctx: CanvasRenderingContext2D, ps: ParticleSystem) {
     this.particleSystem = ps;
     this.backgroundCreator = new BackgroundCreator({ canvasRef: this.canvas, ctx: this.ctx });
+    this.waveManager = new EnemiesWavesManager([]);
   }
 
+  /** se inicia la escena y se agrega la primera oleada de enemigos  */
+  init(){
+    this.start = true;
+    this.waveManager.getCurrentWave().forEach(e => {this.add(e);} );
+  }
 
   playMusic() {
     this.audioManager = new AudioManager();
@@ -83,8 +92,11 @@ export class Scene {
     });
   }
 
+  /** funcion global de actualización de objetos de la escena */
   update(deltaTime: number = 0) {
+    /** si la escena no a iniciado no actualizamos nada */
     if (!this.start) return;
+
     // Filtra los objetos que ya no están activos (como proyectiles desactivados)
     this.gameObjects = this.gameObjects.filter(obj => obj.active);
 
@@ -92,6 +104,14 @@ export class Scene {
       gameObj.update(deltaTime);
       CollisionSystem.iterateGameObjectsForCollisions(this.gameObjects);
     });
+
+    /** si la oleada actual ya fue eliminada */
+    if (this.waveManager.isCurrentWaveCleared()){
+      //siguiente oleada
+      this.waveManager.nextWave();
+      //agregamos los enemigos de la nueva oleada a la escena
+      this.waveManager.getCurrentWave().forEach(e => {this.add(e);} );
+    }
 
     // Llama al nuevo método para eliminar proyectiles fuera del canvas
     this._checkAndRemoveOutOfBoundObjects();
