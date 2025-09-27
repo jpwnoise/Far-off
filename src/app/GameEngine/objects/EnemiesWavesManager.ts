@@ -15,6 +15,11 @@ export class EnemiesWavesManager {
     /** todas las oleadas */
     private Waves: Enemy[][] = [];
 
+    /** devuelve todas las oleadas */
+    get getWaves() {
+        return this.Waves;
+    }
+
     /** indice de la oleada actual */
     private currentWaveIndex = 0;
 

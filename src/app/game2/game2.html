@@ -1,40 +1,16 @@
-<div class="interface">
-    <div class="canvas_container">
-        <canvas #gameCanvas width="1500" height="900"></canvas>
-        
-        @if (hasTarted){
-        <!--div style="position: absolute; top: 0; display:flex; justify-content:center; border:1px solid black">
-            <button class="play_pause" (click)="playPause()">{{isPlaying?'Pausar':'Jugar'}}</button>
-        </div-->
-        }
+<div class="canvas_container">
+    <canvas #gameCanvas></canvas>
 
-        <div class="player-hud">
-            <div>vida: {{player?.stats?.health}}</div>
-            <div>escudo: {{player?.stats?.shield}}</div>
-        </div>
-        <div class="startButton" [class.active]="hasTarted">
-            <button [class.startButtonPressed]="isStartButtonPressed" (mousedown)="isStartButtonPressed = true"
-                (mouseup)="isStartButtonPressed = false" (mouseleave)="isStartButtonPressed = false"
-                (click)="start()">Iniciar</button>
-        </div>
-        <div class="enemy-name" style="color: aqua; padding: 5px" [class.active]="enemyHudTransition">
-            {{currentEnemyAttacked?.name}}</div>
+    @if (hasTarted){
+    <div style="position: absolute; top: 0; display:flex; justify-content:center; border:1px solid black">
+        <button class="play_pause" (click)="playPause()">{{isPlaying?'Pausar':'Jugar'}}</button>
+    </div>
+    }
 
-        <!-- ====================== barra de vida del enemigo ====================== -->
-        <div class="enemy_hud_container" [style.width.px]="currentEnemyHudWidth" [class.active]="enemyHudTransition">
-            <div
-                [style.width.%]="currentEnemyAttacked ? (currentEnemyAttacked.stats.health / currentEnemyAttacked.stats.maxHealth) * 100 : 0">
-            </div>
-        </div>
+</div> <!-- fin del canvas container-->
 
-        <!-- ====================== barra de escudo enemigo ====================== -->
-        <div class="enemy_hud_container" [style.width.px]="currentEnemyHudWidth" [class.active]="enemyHudTransition"
-            style="bottom: 20px; border-color: blue;">
-            <div style="background-color: blue; "
-                [style.width.%]="currentEnemyAttacked ? (currentEnemyAttacked.stats.shield / currentEnemyAttacked.stats.maxShield) * 100 : 0">
-            </div>
-        </div>
-
-    </div> <!-- fin del canvas container-->
-    <div></div> <!-- un elemento solo para distribuir -->
+<div class="startButton" [class.active]="hasTarted">
+    <button [class.startButtonPressed]="isStartButtonPressed" (mousedown)="isStartButtonPressed = true"
+        (mouseup)="isStartButtonPressed = false" (mouseleave)="isStartButtonPressed = false"
+        (click)="start()">Iniciar</button>
 </div>

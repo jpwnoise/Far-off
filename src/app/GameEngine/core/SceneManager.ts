@@ -110,13 +110,27 @@ export class Scene {
       //siguiente oleada
       this.waveManager.nextWave();
       //agregamos los enemigos de la nueva oleada a la escena
-      this.waveManager.getCurrentWave().forEach(e => {this.add(e);} );
+      this.waveManager.getCurrentWave().forEach(e => {
+        this.add(e);
+        e.wasHittedHandler = ()=>{ 
+          this.aEnemyWasHitted(e);
+          console.log("enemigo atacado desde Scene.ts");
+        };
+      } );
+
+      this.waveHasChanged(this.waveManager.getCurrentWave());
     }
 
     // Llama al nuevo método para eliminar proyectiles fuera del canvas
     this._checkAndRemoveOutOfBoundObjects();
     this.backgroundCreator.update(deltaTime);
-  }
+  }//fin del update
+
+  //funcion para exponer el enemigo que fue atacado
+  aEnemyWasHitted:(enemy:Enemy)=>void = ()=>{};
+
+  /** función que se ejecuta cuando la oleada cambia */
+  waveHasChanged:(wave:Enemy[])=>void = ()=>{};
 
 
   /** === dibujando === */

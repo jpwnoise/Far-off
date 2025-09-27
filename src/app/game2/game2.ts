@@ -6,6 +6,9 @@ import { createFirstScene } from '../GameEngine/Scenes/First Scene/FirstScene';
 import { createSecondScene } from '../GameEngine/Scenes/Second Scene/SecondScene';
 import { Enemy } from '../GameEngine/objects/Enemy';
 import { Ship } from '../GameEngine/objects/Ship';
+import { ShipAndWeaponMenu } from '../GameEngine/Menus/ShipAndWeaponMenu';
+
+// Define una interfaz para los objetos del juego que tienen métodos update y draw  
 
 interface GameEngineObject {
   update: (deltaTime: number) => void;
@@ -23,18 +26,21 @@ export class Game2 implements AfterViewInit, OnDestroy {
   isStartButtonPressed: boolean = false;
   @ViewChild('gameCanvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
   private animationId: number = 0;
+  private readonly GAME_WIDTH = 1280;
+  private readonly GAME_HEIGHT = 720;
+
 
   constructor(private cd: ChangeDetectorRef) { }
 
   /**Se nececita referencia al jugador para mostrar el HUD*/
-  public player: Ship | null = null; 
+  public player: Ship | null = null;
 
   /** contiene los objetos a ser actualizados y dibujados por el loop del juego */
   private objects: GameEngineObject[] = [];
 
   /** el enemigo actual que esta recibiendo daño */
   public currentEnemyAttacked: Enemy | null = null;
-  public enemyHudTransition = false; 
+  public enemyHudTransition = false;
 
   // Propiedad para el tiempo del último fotograma
   private lastTime: number = 0;
@@ -42,7 +48,7 @@ export class Game2 implements AfterViewInit, OnDestroy {
   /** el maximo del HUD del enemigo en pixeles 
    * el cual será calculado con un % del tamaño del canvas para mantener la proporción cuando el canvas cambie
   */
-  maxHudWidth:number = 0;
+  maxHudWidth: number = 0;
 
   /** obtienes la proporción de HUD
    *  esto para hacer lo siguiente:
@@ -61,11 +67,34 @@ export class Game2 implements AfterViewInit, OnDestroy {
     return width;
   }
 
+  private applyGameScale(ctx: CanvasRenderingContext2D) {
+    const canvas = this.canvasRef.nativeElement;
+
+    // Asegura que el canvas ocupe todo el viewport
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Calcula el factor de escala para mantener proporción
+    const scale = Math.min(
+      canvas.width / this.GAME_WIDTH,
+      canvas.height / this.GAME_HEIGHT
+    );
+
+    // Centra el área de juego
+    const offsetX = (canvas.width - this.GAME_WIDTH * scale) / 2;
+    const offsetY = (canvas.height - this.GAME_HEIGHT * scale) / 2;
+
+    // Aplica la transformación al contexto
+    ctx.setTransform(scale, 0, 0, scale, offsetX, offsetY);
+  }
+
+
   /** inicializaciones ya cuando los elementos son visibles  */
   ngAfterViewInit(): void {
     const canvas = this.canvasRef.nativeElement;
     this.maxHudWidth = canvas.width * .8; // el tamaño maximo del hud del enemigo mas grande 
     const ctx = canvas.getContext('2d')!;
+    this.applyGameScale(ctx); // ← Aquí aplicas la escala
     const particleSystem = new ParticleSystem(ctx);
 
     const firstScene = createFirstScene(this.canvasRef, ctx, particleSystem);
@@ -76,51 +105,65 @@ export class Game2 implements AfterViewInit, OnDestroy {
     sceneManager.addScene(secondScene);
     sceneManager.setCurrentScene(1);
 
+
+
     //obtenemos la referencia a la nave del jugador de la escena actual
-    sceneManager.getCurrentScene().gameObjects.forEach((e)=>{
-      if (e instanceof Ship){
-        this.player = e; 
+    sceneManager.getCurrentScene().gameObjects.forEach((e) => {
+      if (e instanceof Ship) {
+        this.player = e;
         this.cd.detectChanges(); //actualizamos la vista para que el HUD del jugador sepa que la nave ya fue creada
       }
     })
 
     //asignamos la función que establece el actualizador del enemigo atacado 
     //esto para visualizar la vida del enemigo en el juego 
-    sceneManager.getCurrentScene().gameObjects.forEach((obj) => { if (obj instanceof Enemy) { obj.wasHittedHandler = ()=>{this.setEnemy(obj)} } });
+    sceneManager.getCurrentScene().aEnemyWasHitted = (enemy: Enemy) => {
+      this.setEnemy(enemy);
+      console.log("enemigo atacado desde game2.ts");
+    };
+
+    const shipAndWeaponMenu = new ShipAndWeaponMenu(ctx, this.canvasRef);
     
+    this.objects.push(shipAndWeaponMenu);
+
     //se agrega particleSystem por que tambien necesita ser actualizado y dibujado 
     this.objects.push(particleSystem);
     const startMenu = new StartMenu(ctx);
     this.objects.push(startMenu);
-    
+
     // Se inicializa el loop sin pasar el contexto
     this.loop();
-  }
-  
+  }//fin del ngAfterViewInit
+
   //establecemos el enemigo que fue golpeado
-  setEnemy(obj:Enemy){
+  setEnemy(obj: Enemy) {
     this.currentEnemyAttacked = obj;
     this.enemyHudTransition = true;
-    setTimeout(()=>{
+    setTimeout(() => {
       this.enemyHudTransition = false;
     }, 1000)
   }
 
   playPause() { }
 
-  /**inicio del juego */
+  /**inicio del juego o sea cuando en el menu de inicio se presiona el boton de iniciar */
   start() {
 
     //para activar animaciones 
     this.hasTarted = true;
 
     //cambiar entre el menu y la escena 
+    // el calback se ejecuta cuando termina la animacion del menu
     this.finalAnimAndDestroyMenu(() => {
       this.objects.forEach(e => {
-        if (e instanceof SceneManager) {
-          e.getCurrentScene().init();
-          this.isStartButtonPressed = true;
+        if (e instanceof ShipAndWeaponMenu) {
+          e.init(); //iniciamos el menu de seleccion de nave y arma
         }
+
+        // if (e instanceof SceneManager) {
+        //   e.getCurrentScene().init();
+        //   this.isStartButtonPressed = true;
+        // }
       });
     });
   }
@@ -145,9 +188,12 @@ export class Game2 implements AfterViewInit, OnDestroy {
     this.animationId = requestAnimationFrame(this.loop);
   }
 
+  /** actualiza todos los objetos en el array de objetos */
   update(deltaTime: number) {
+    /**llama el update de los objetos propios */
     this.objects.forEach((e) => { e.update(deltaTime) });
   }
+
 
   draw(ctx: CanvasRenderingContext2D) {
     this.objects.forEach((e) => { e.draw(ctx) });

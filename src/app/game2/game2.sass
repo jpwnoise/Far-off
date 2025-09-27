@@ -1,13 +1,39 @@
-.canvas_container
-    position: relative
-    display: inline-block
+html, body
+  margin: 0
+  padding: 0
+  box-sizing: border-box
+  display: flex
+  flex-direction: column
+  min-height: 100vh
 
 .interface
-    display: flex
-    justify-content: center
-    align-items: center
-    width: 100vw
-    height: 100vh
+  outline: 2px solid blue
+
+body
+  outline: 2px solid red
+
+*, *::before, *::after
+  box-sizing: inherit
+
+.interface
+  padding: 0
+  margin: 0
+  position: relative
+  display: block
+  width: 100%
+  height: 80%
+  overflow: hidden
+
+.canvas_container
+  position: relative
+  width: 100%
+  height: 100%
+  display: block
+
+canvas
+  display: block
+  width: 100%
+  height: 100%
 
 .stats
     font-family: 'Audiowide', cursive
@@ -20,10 +46,10 @@
 .enemy_hud_container
     font-family: 'Audiowide', cursive
     position: absolute
+    max-width: 100vw
+    box-sizing: border-box
     bottom: 40px
     left: 50%
-    height: 10px
-    width: 900px
     overflow: hidden
     border-radius: .3em
     transform: translateX(-50%)

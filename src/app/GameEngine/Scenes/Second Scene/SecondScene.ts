@@ -37,6 +37,10 @@ export const createSecondScene = (canvas: ElementRef<HTMLCanvasElement>, ctx: Ca
         e.particlesSystem = ps;
         //cuando un enemigo cree un proyectil lo agregamos a la escena
         e.projectileWasCreated = (p: Proyectile) => { scene.add(p) };
+        e.wasHittedHandler = ()=>{ 
+          scene.aEnemyWasHitted(e);
+          console.log("enemigo atacado desde SecondScene.ts");
+        }
     });
     scene.waveManager.addWave(wave_5_enemies);
     scene.waveManager.setWaveTo(0); //iniciamos en la primera oleada
@@ -44,6 +48,10 @@ export const createSecondScene = (canvas: ElementRef<HTMLCanvasElement>, ctx: Ca
     wave_7_ememies.forEach(e=>{
         e.particlesSystem = ps;
         e.projectileWasCreated = (p: Proyectile) => { scene.add(p) };   
+        e.wasHittedHandler = ()=>{ 
+          scene.aEnemyWasHitted(e);
+          console.log("enemigo atacado desde SecondScene.ts");
+        }
     });
     scene.waveManager.addWave(wave_7_ememies);
     
