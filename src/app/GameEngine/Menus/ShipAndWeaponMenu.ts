@@ -2,6 +2,9 @@ import { ElementRef } from "@angular/core";
 import { AudioManager } from "../core/AudioManager";
 import { InputHandler } from "../core/InputHandler";
 import { BackgroundCreator } from "../objects/BackgroundCreator";
+import { Border, SurgeCannonOption } from "./Interfaces";
+import { ShipSelectionSubMenu } from "./ShipSelectionSubMenu";
+import { SurgeCannonSubMenu } from "./SurgeCannonSubMenu";
 
 /** menu donde elijes la nave y su surge weapon */
 export class ShipAndWeaponMenu {
@@ -9,20 +12,18 @@ export class ShipAndWeaponMenu {
     private audioManager = new AudioManager();
     private inputHandler = new InputHandler();
     private backgroundCreator: BackgroundCreator;
+    private shipSelectionSubMenu;
+    private surgeCannonSubMenu;
 
-    /** el borde por defecto para la opción */
-    borderOption: Border = {
-        width: 150,
-        height: 50,
-        color: 'white',
-        borderWidth: 3,
-        backgroundColor: 'rgba(0,0,0,.5)'
-    }
+    /** color para el selector y el fondo del ship  */
+    private readonly bgColor = `rgba(0,0,120,${.3})`;
+    private readonly brColor = `rgba(40,40,150,)${.5})`;
 
     constructor(ctx: CanvasRenderingContext2D, canvas: ElementRef<HTMLCanvasElement>) {
         this.ctx = ctx;
-        this.loadOptions();
-        this.backgroundCreator = new BackgroundCreator({ canvasRef:canvas, ctx: this.ctx, stars: true, celestialBodies: true });
+        this.backgroundCreator = new BackgroundCreator({ canvasRef: canvas, ctx: this.ctx, stars: true, celestialBodies: true });
+        this.shipSelectionSubMenu = new ShipSelectionSubMenu(this.ctx);
+        this.surgeCannonSubMenu = new SurgeCannonSubMenu(this.ctx);   
     }
 
     //** bandera de inicalizacion */
@@ -34,59 +35,11 @@ export class ShipAndWeaponMenu {
         this.initialized = true;
     }
 
-    /**carga las opciones de naves y armas */
-    loadOptions() {
-        this.ships = [
-            {
-                name: 'Interceptor',
-                description: 'A fast and agile ship, perfect for quick maneuvers and hit-and-run tactics.',
-                imageSrc: 'assets/images/ships/interceptor.png'
-            },
-            {
-                name: 'Destroyer',
-                description: 'A heavily armored ship with powerful weapons, ideal for taking on large enemy fleets.',
-                imageSrc: 'assets/images/ships/destroyer.png'
-            },
-            {
-                name: 'Cruiser',
-                description: 'A balanced ship with a mix of speed, armor, and firepower, suitable for various combat scenarios.',
-                imageSrc: 'assets/images/ships/cruiser.png'
-            }
-        ];
-        this.surgeCannons = [
-            {
-                name: 'Plasma Cannon',
-                description: 'Fires concentrated plasma bolts that deal high damage to single targets.',
-                imageSrc: 'assets/images/weapons/plasma_cannon.png'
-            },
-            {
-                name: 'Laser Beam',
-                description: 'Emits a continuous laser beam that can cut through multiple enemies in a line.',
-                imageSrc: 'assets/images/weapons/laser_beam.png'
-            },
-            {
-                name: 'Missile Launcher',
-                description: 'Launches homing missiles that track and explode upon impact with enemies.',
-                imageSrc: 'assets/images/weapons/missile_launcher.png'
-            }
-        ]
-    }
-
-    /** todas las opciones de naves */
-    ships: ShipOption[] = []
-
     /** la nave selccionada  */
     shipSelected: number = 0;
 
-    /** todos los surge cannons */
-    surgeCannons: SurgeCannonOption[] = []
-
     /** el surge cannon seleccionado */
     surgeCannonSelected: number = 0;
-
-    /** la posicion del borde que funciona como selector  */
-    selectorPosition: number = 0;
-
 
     /** "ventana" visible por defecto 
      * por ventana me refiero a la seccion del menu que se esta viendo
@@ -98,9 +51,31 @@ export class ShipAndWeaponMenu {
     showShipWindow() {
 
     }
+    
+    /** la opacidad del menu de armas secundarias */
+    private readonly weaponMenuOpacity = 0;
 
     /** cambia a la ventana de armas secundarias solo si esta en la de naves */
-    showWeaponWindow() { }
+    showWeaponWindow() {
+        /** para mostrar el menu de armas hacemos fadeOut para ocultar el menu de naves  */
+        this.shipSelectionSubMenu.runOpaciyAnimacion = true;
+        this.surgeCannonSubMenu.runfadeIn = true;
+
+        console.log('cambiando a menu de armas');
+     }
+
+    /** dibuja el titulo de la ventana actual */
+    drawWindowTitle() {
+        const ctx = this.ctx;
+        const canvasWidth = ctx.canvas.width;
+        const title = this.currentWindow === 'ships' ? 'Select Your Ship' : 'Select Your Weapon';
+        ctx.fillStyle = this.brColor;
+        ctx.font = '30px Audiowide';
+        const textMetrics = ctx.measureText(title);
+        const y = 50;
+        ctx.textAlign = 'center';
+        ctx.fillText(title, canvasWidth / 2, y);
+    }
 
     /** dibujamos un cuadro que contendra visualmente al menú */
     drawMainBorder() {
@@ -110,119 +85,80 @@ export class ShipAndWeaponMenu {
         const mainBorder: Border = {
             width: canvasWidth * 0.8,
             height: canvasHeight * 0.8,
-            color: 'white',
+            color: this.brColor,
             borderWidth: 5,
             backgroundColor: 'rgba(0,0,0,.7)'
         }
         const x = (canvasWidth - mainBorder.width) / 2;
         const y = (canvasHeight - mainBorder.height) / 2;
+        ctx.strokeStyle = mainBorder.color;
+        ctx.lineWidth = mainBorder.borderWidth;
+        ctx.fillStyle = mainBorder.backgroundColor;
+        ctx.fillRect(x, y, mainBorder.width, mainBorder.height);
+        ctx.strokeRect(x, y, mainBorder.width, mainBorder.height);
     }
 
 
     /** actualizacion de datos del menu */
-    update() {
+    update(deltaTime: number) {
         if (!this.initialized) return;
         this.checkInput();
         this.backgroundCreator.update();
+
+        /** solo se anima si la bandera esta activada */
+        this.shipSelectionSubMenu.fadeOut(deltaTime); 
+        this.surgeCannonSubMenu.update(deltaTime);
     }
 
-private inputRepeatDelay = 300; // ms antes de empezar a repetir
-private inputRepeatRate = 100;  // ms entre repeticiones
-private inputState: Record<string, { firstPress: number; lastRepeat: number }> = {};
 
-checkInput() {
-  const now = Date.now();
+    /** para manejar la entrada del usuario con repeticion al mantener presionada una tecla */
+    private inputRepeatDelay = 300; // ms antes de empezar a repetir
+    private inputRepeatRate = 100;  // ms entre repeticiones
+    private inputState: Record<string, { firstPress: number; lastRepeat: number }> = {};
 
-  ['s', 'w'].forEach(key => {
-    if (this.inputHandler.isPressed(key)) {
-      const state = this.inputState[key] ?? { firstPress: now, lastRepeat: 0 };
-      const timeHeld = now - state.firstPress;
-      const timeSinceLast = now - state.lastRepeat;
+    checkInput() {
+        const now = Date.now();
 
-      if (
-        timeHeld < this.inputRepeatDelay && state.lastRepeat === 0 ||
-        timeHeld >= this.inputRepeatDelay && timeSinceLast >= this.inputRepeatRate
-      ) {
-        if (key === 's') this.nextOption();
-        if (key === 'w') this.previosOption();
-        this.inputState[key] = {
-          firstPress: state.firstPress,
-          lastRepeat: now
-        };
-      } else {
-        this.inputState[key] = state;
-      }
-    } else {
-      delete this.inputState[key]; // reset when released
-    }
-  });
+        ['s', 'w'].forEach(key => {
+            if (this.inputHandler.isPressed(key)) {
+                const state = this.inputState[key] ?? { firstPress: now, lastRepeat: 0 };
+                const timeHeld = now - state.firstPress;
+                const timeSinceLast = now - state.lastRepeat;
 
-  if (this.inputHandler.isPressed('d')) this.showWeaponWindow();
-  if (this.inputHandler.isPressed('a')) this.showShipWindow();
-}
-
-
-
-    /** selecciona la opcion anterior en el menu */
-    previosOption() {
-        if (this.currentWindow === 'ships' && this.selectorPosition > 0) {
-            this.selectorPosition--;
-        }
-        else if (this.currentWindow === 'weapons' && this.selectorPosition > 0) {
-            this.selectorPosition--;
-        }
-    }
-
-    /** selecciona la siguiente opcion en el menu */
-    nextOption() {
-        if (this.currentWindow === 'ships' && this.selectorPosition < this.ships.length - 1) {
-            this.selectorPosition++;
-        }
-        else if (this.currentWindow === 'weapons' && this.selectorPosition < this.surgeCannons.length - 1) {
-            this.selectorPosition++;
-        }
-    }
-
-    /** dibula el selector de la opcion que puede ser seleccionada */
-    drawSelector() {
-        const ctx = this.ctx;
-        const padding = 10;
-        const x = this.firstOptionLocation.x - padding;
-        const y = this.firstOptionLocation.y + this.selectorPosition * this.optionSpacing - this.fontSize + padding / 2;
-        const width = this.borderOption.width + padding * 2;
-        const height = this.borderOption.height;
-        ctx.strokeStyle = this.borderOption.color;
-        ctx.lineWidth = this.borderOption.borderWidth;
-        ctx.fillStyle = this.borderOption.backgroundColor;
-        ctx.fillRect(x, y, width, height);
-        ctx.strokeRect(x, y, width, height);
-    }
-
-    /** las coordenadas de la primera opcion */
-    private readonly firstOptionLocation = {
-        x: 100,
-        y: 100
-    }
-
-    /** el espacio entre cada opción */
-    private readonly optionSpacing = 200;
-
-    /** el tamaño de la fuente de las opciones */
-    private readonly fontSize = 20;
-
-    /**dibujamos las opciones */
-    drawOptions() {
-        const ctx = this.ctx;
-        const canvasWidth = ctx.canvas.width;
-        const canvasHeight = ctx.canvas.height;
-
-        /**dibujamos las opciones de las naves */
-        this.ships.forEach((ship, index) => {
-            ctx.fillStyle = 'white';
-            ctx.font = `${this.fontSize}px Audiowide`;
-            ctx.fillText(ship.name, this.firstOptionLocation.x, this.firstOptionLocation.y + index * this.optionSpacing);
+                if (
+                    timeHeld < this.inputRepeatDelay && state.lastRepeat === 0 ||
+                    timeHeld >= this.inputRepeatDelay && timeSinceLast >= this.inputRepeatRate
+                ) {
+                    if (key === 's') this.nextOption();
+                    if (key === 'w') this.previosOption();
+                    this.inputState[key] = {
+                        firstPress: state.firstPress,
+                        lastRepeat: now
+                    };
+                } else {
+                    this.inputState[key] = state;
+                }
+            } else {
+                delete this.inputState[key]; // reset when released
+            }
         });
+
+        if (this.inputHandler.isPressed('d')) this.showWeaponWindow();
+        if (this.inputHandler.isPressed('a')) this.showShipWindow();
     }
+
+    previosOption() {
+        this.shipSelectionSubMenu.previosOption();
+    }
+    
+    /** selecciona la opcion anterior en el menu */
+    nextOption() {
+        if (this.currentWindow === 'ships') {
+            this.shipSelectionSubMenu.nextOption();
+        }
+    }
+
+    
 
 
     /** dibuja el menu */
@@ -233,38 +169,13 @@ checkInput() {
         //fondo animado
         this.backgroundCreator.draw();
 
+        this.drawWindowTitle();
+
         //el borde principal del menu
         this.drawMainBorder();
 
-        //las opciones
-        this.drawOptions();
+        this.shipSelectionSubMenu.draw();
 
-        //el selector
-        this.drawSelector();
-
+        this.surgeCannonSubMenu.draw();
     }
-
-}
-
-/** la info de la nave */
-interface ShipOption {
-    name: string;
-    description: string;
-    imageSrc: string;
-}
-
-/** la info del arma secundnaria */
-interface SurgeCannonOption {
-    name: string;
-    description: string;
-    imageSrc: string;
-}
-
-/** el tipo de borde que rodea la opcion */
-interface Border {
-    width: number;
-    height: number;
-    color: string;
-    borderWidth: number;
-    backgroundColor: string;
 }
