@@ -49,7 +49,10 @@ export class ShipAndWeaponMenu {
 
     /** cambia a la ventana de naves solo si esta en la de armas secundarias */
     showShipWindow() {
-
+        this.currentWindow = 'ships';
+        /** para mostrar el menu de armas hacemos fadeOut para ocultar el menu de naves  */
+        this.shipSelectionSubMenu.startFadeIn();
+        this.surgeCannonSubMenu.startFadeOut();
     }
     
     /** la opacidad del menu de armas secundarias */
@@ -57,46 +60,15 @@ export class ShipAndWeaponMenu {
 
     /** cambia a la ventana de armas secundarias solo si esta en la de naves */
     showWeaponWindow() {
+        this.currentWindow = 'weapons'
         /** para mostrar el menu de armas hacemos fadeOut para ocultar el menu de naves  */
-        this.shipSelectionSubMenu.runOpaciyAnimacion = true;
-        this.surgeCannonSubMenu.runfadeIn = true;
-
-        console.log('cambiando a menu de armas');
+        this.shipSelectionSubMenu.startFadeOut();
+        this.surgeCannonSubMenu.startFadeIn()
      }
 
-    /** dibuja el titulo de la ventana actual */
-    drawWindowTitle() {
-        const ctx = this.ctx;
-        const canvasWidth = ctx.canvas.width;
-        const title = this.currentWindow === 'ships' ? 'Select Your Ship' : 'Select Your Weapon';
-        ctx.fillStyle = this.brColor;
-        ctx.font = '30px Audiowide';
-        const textMetrics = ctx.measureText(title);
-        const y = 50;
-        ctx.textAlign = 'center';
-        ctx.fillText(title, canvasWidth / 2, y);
-    }
 
-    /** dibujamos un cuadro que contendra visualmente al menú */
-    drawMainBorder() {
-        const ctx = this.ctx;
-        const canvasWidth = ctx.canvas.width;
-        const canvasHeight = ctx.canvas.height;
-        const mainBorder: Border = {
-            width: canvasWidth * 0.8,
-            height: canvasHeight * 0.8,
-            color: this.brColor,
-            borderWidth: 5,
-            backgroundColor: 'rgba(0,0,0,.7)'
-        }
-        const x = (canvasWidth - mainBorder.width) / 2;
-        const y = (canvasHeight - mainBorder.height) / 2;
-        ctx.strokeStyle = mainBorder.color;
-        ctx.lineWidth = mainBorder.borderWidth;
-        ctx.fillStyle = mainBorder.backgroundColor;
-        ctx.fillRect(x, y, mainBorder.width, mainBorder.height);
-        ctx.strokeRect(x, y, mainBorder.width, mainBorder.height);
-    }
+
+    
 
 
     /** actualizacion de datos del menu */
@@ -106,7 +78,7 @@ export class ShipAndWeaponMenu {
         this.backgroundCreator.update();
 
         /** solo se anima si la bandera esta activada */
-        this.shipSelectionSubMenu.fadeOut(deltaTime); 
+        this.shipSelectionSubMenu.update(deltaTime); 
         this.surgeCannonSubMenu.update(deltaTime);
     }
 
@@ -148,13 +120,21 @@ export class ShipAndWeaponMenu {
     }
 
     previosOption() {
-        this.shipSelectionSubMenu.previosOption();
+        if (this.currentWindow === 'ships') {
+            this.shipSelectionSubMenu.previosOption();
+        }
+        if(this.currentWindow === 'weapons'){
+            this.surgeCannonSubMenu.previosOption();
+        }
     }
     
     /** selecciona la opcion anterior en el menu */
     nextOption() {
         if (this.currentWindow === 'ships') {
             this.shipSelectionSubMenu.nextOption();
+        }
+        if(this.currentWindow === 'weapons'){
+            this.surgeCannonSubMenu.nextOption();
         }
     }
 
@@ -168,11 +148,6 @@ export class ShipAndWeaponMenu {
 
         //fondo animado
         this.backgroundCreator.draw();
-
-        this.drawWindowTitle();
-
-        //el borde principal del menu
-        this.drawMainBorder();
 
         this.shipSelectionSubMenu.draw();
 
