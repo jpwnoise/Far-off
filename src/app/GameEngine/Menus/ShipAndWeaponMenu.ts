@@ -97,6 +97,11 @@ export class ShipAndWeaponMenu {
                 const timeHeld = now - state.firstPress;
                 const timeSinceLast = now - state.lastRepeat;
 
+                // inicia la aminacion de las lineas 
+                this.surgeCannonSubMenu.firstLineAnim = true; 
+                this.surgeCannonSubMenu.secondLineAnim = true; 
+
+
                 if (
                     timeHeld < this.inputRepeatDelay && state.lastRepeat === 0 ||
                     timeHeld >= this.inputRepeatDelay && timeSinceLast >= this.inputRepeatRate
@@ -115,7 +120,12 @@ export class ShipAndWeaponMenu {
             }
         });
 
-        if (this.inputHandler.isPressed('d')) this.showWeaponWindow();
+        if (this.inputHandler.isPressed('d')) 
+            {   //activacion de la animacion 
+                this.surgeCannonSubMenu.firstLineAnim = true; 
+                this.surgeCannonSubMenu.secondLineAnim = true; 
+                this.showWeaponWindow();
+            }
         if (this.inputHandler.isPressed('a')) this.showShipWindow();
     }
 
