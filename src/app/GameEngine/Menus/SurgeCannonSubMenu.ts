@@ -1,5 +1,7 @@
 import { Border, SurgeCannonOption } from "./Interfaces";
 import { TextTools } from "./TextTools";
+import { ScreenFlash } from "../Animation/ScreenFlash";
+import { MovingText } from "../Animation/MovingText";
 
 export class SurgeCannonSubMenu extends TextTools {
 
@@ -10,6 +12,7 @@ export class SurgeCannonSubMenu extends TextTools {
 
     private ctx: CanvasRenderingContext2D;
     private surgeCannons: SurgeCannonOption[] = [];
+    screenFlashAnim:ScreenFlash; 
 
     /** el espacio entre cada opción */
     private readonly optionSpacing = 200;
@@ -57,6 +60,11 @@ export class SurgeCannonSubMenu extends TextTools {
         return `rgba(20,0,120,${this.globalOpacity * 0.5})`;
     }
 
+    /** el color calculado para el selector */
+    get selectorColor() {
+        return `rgba(20,0,120,${this.globalOpacity * 0.5 * this.selectOpacityProgress})`;
+    }
+
     /** la posicion del borde que funciona como selector  */
     selectorPosition: number = 0;
     borderOption: Border = {
@@ -67,12 +75,14 @@ export class SurgeCannonSubMenu extends TextTools {
         backgroundColor: 'rgba(0,0,0,.5)'
     }
 
-
+    movingText:MovingText
 
     constructor(ctx: CanvasRenderingContext2D) {
         super();
         this.ctx = ctx;
         this.loadOptions();
+        this.screenFlashAnim = new ScreenFlash(ctx);
+        this.movingText = new MovingText(ctx,{x:1300,y:50});
     }
 
     loadOptions() {
@@ -107,14 +117,28 @@ export class SurgeCannonSubMenu extends TextTools {
     previosOption() {
         if (this.selectorPosition > 0) {
             this.selectorPosition--;
+            this.activateLinesAnim();
+            this.optionTextFadeIn();
+            this.selectorFadeIn()
         }
     }
-
+    
     /** selecciona la siguiente opcion en el menu */
     nextOption() {
         if (this.selectorPosition < this.surgeCannons.length - 1) {
             this.selectorPosition++;
+            this.activateLinesAnim();
+            this.optionTextFadeIn();
+            this.selectorFadeIn()
         }
+    }
+
+    //activa la animacion de las lineas 
+    activateLinesAnim(){
+        this.verticalHeightProgress = 0;
+        this.firstLineAnim = true; 
+        this.secondLineAnim = true; 
+        this.verticalLineAnim = true; 
     }
 
     // --- MÉTODOS DE CONTROL DE ANIMACIÓN DE OPACIDAD ---
@@ -133,17 +157,44 @@ export class SurgeCannonSubMenu extends TextTools {
         }
     }
 
+    //ANIMACIONES DE OPACIDAD PARA EL TEXTO  
+    runTextFadeInFlag = false; 
+
+    //es necesario llamar esta funcion para inicializar la animacion 
+    private optionTextFadeIn(){
+        this.runTextFadeInFlag = true; 
+        this.textOpacityProgress = 0; 
+        this.textTimeAcc = .5;
+    }
+
+    textTimeAcc = .5; 
+
+    //en 1 por defecto (visible)
+    textOpacityProgress = 1;
+    textOpacityAnimDuration = 1; 
+
+    // acualiza el valor de la opacidad del texto 
+    updateTextOpacity(deltatime:number){
+        if (this.runTextFadeInFlag){
+            this.textTimeAcc += deltatime;
+            this.textOpacityProgress = this.textTimeAcc / this.textOpacityAnimDuration;
+            if (this.textOpacityProgress >= 1){
+                this.textOpacityProgress = 1;
+                this.runTextFadeInFlag = false; 
+            }
+        }
+
+    }
 
     /** * Valida si la opcion a dibujar es la que tiene el selector.
      * Calcula el color animado de brillo/oscurecimiento.
+     * // la opacidad puede estar manipulada en la transicion del menu o solo or fade de seleccion  por eso tiene la multiplicacion
      */
     textOptionColor(indexOption: number): string {
+
+        // Color base si no está seleccionada
         if (indexOption !== this.selectorPosition) {
-            // Color base si no está seleccionada
-            return `rgba(${this.optionBaseColor.r},
-                          ${this.optionBaseColor.g},
-                          ${this.optionBaseColor.b},
-                          ${this.globalOpacity})`;
+            return `rgba(${this.optionBaseColor.r},${this.optionBaseColor.g},${this.optionBaseColor.b},${this.globalOpacity*.5} )`; 
         }
 
         // 1. Calcula el progreso (siempre entre 0 y 1 para la fase actual)
@@ -163,7 +214,7 @@ export class SurgeCannonSubMenu extends TextTools {
         return `rgba(${Math.round(this.optionBaseColor.r + currentLightness)},
                      ${Math.round(this.optionBaseColor.g + currentLightness)},
                      ${Math.round(this.optionBaseColor.b + currentLightness)},
-                     ${this.globalOpacity})`;
+                     ${this.globalOpacity * this.textOpacityProgress})`;
     }
 
     // La lógica correcta que ya definimos
@@ -188,7 +239,8 @@ export class SurgeCannonSubMenu extends TextTools {
         const ctx = this.ctx;
         const offsetX = 0;
         this.surgeCannons.forEach((cannon, index) => {
-            ctx.fillStyle = this.textOptionColor(index); // Usa la función de color
+            const color = this.textOptionColor(index);
+            ctx.fillStyle =  color;
             ctx.font = `${this.fontSize}px Audiowide`;
             ctx.fillText(cannon.name, this.firstOptionLocation.x + offsetX, this.firstOptionLocation.y + index * this.optionSpacing);
         });
@@ -277,7 +329,7 @@ export class SurgeCannonSubMenu extends TextTools {
         const b = Math.round(baseB + currentChange * 0.5); // Cambio moderado en azul
 
         // 2. Devolvemos el color animado con la opacidad global
-        return `rgba(${r}, ${g}, ${b}, ${this.globalOpacity})`;
+        return `rgba(${r}, ${g}, ${b}, ${this.globalOpacity * this.selectOpacityProgress})`;
     }
 
 
@@ -357,11 +409,129 @@ export class SurgeCannonSubMenu extends TextTools {
             const timeProgress = this.secondLineTimeAcumulator / this.movimgLineAnimDuration;
             this.imgDescwidthProgress = timeProgress * this.secondLineFinalWith;
             if (this.secondLineTimeAcumulator >= this.movimgLineAnimDuration){
-                this.secondLineTimeAcumulator = 0; 
+                this.secondLineTimeAcumulator = 0;
+                this,this.imgDescwidthProgress = this.secondLineFinalWith;
                 this.secondLineAnim = false; 
             }
         }
 
+    }
+
+    // bandera para activar la animacion vertical 
+    verticalLineAnim = false;
+    verticalLineTimeAcc = 0; 
+    verticalHeightProgress = 0;
+    finalHeight = 200;
+
+    // actualiza gradualmente la altura de la tercera linea 
+    updateVerticalHeight(deltatime:number){
+        if (this.verticalLineAnim){
+            this.verticalLineTimeAcc += deltatime; 
+            const timeProgress = this.verticalLineTimeAcc / this.movimgLineAnimDuration; 
+            this.verticalHeightProgress = timeProgress * this.finalHeight; 
+            if (this.verticalLineTimeAcc >= this.movimgLineAnimDuration){
+                this.verticalLineTimeAcc = 0;
+                this.verticalHeightProgress = this.finalHeight; // aseguras valor final estable
+                this.verticalLineAnim = false; 
+            }
+        }
+
+    }
+
+    /** actualiza cada frame la opacidad de el selector  */
+    selectOpacityProgress = 0;
+    timeSelectOpacityAcc = 0; 
+    selectFadeInFlag = false;
+
+    // activa la animación fadein del selector 
+    selectorFadeIn(){
+        this.selectFadeInFlag = true; 
+        this.timeSelectOpacityAcc = 0; 
+        this.selectOpacityProgress = 0; 
+    }
+
+    //cuando cambiamos de opcion hacemos un fade en el selector 
+    updateSelectorOpacity(delta:number){
+        if (this.selectFadeInFlag){
+            this.timeSelectOpacityAcc += delta;
+            this.selectOpacityProgress = this.timeSelectOpacityAcc / .5; 
+            if (this.selectOpacityProgress >= .5){
+                this.selectOpacityProgress = .5; 
+                this.selectFadeInFlag = false; 
+            }
+        }
+    }
+
+
+    /** la opcion seleccionada */
+    optionSelected:number = -1; 
+
+    /** ===== SELECCIONAR LA OPCION ACTUAL =====*/
+    selectCurrentOption(){
+        // si estas seleccionando la opcion que ya esta seleccionada no aplicamos animaciones etc...
+        if (this.optionSelected === this.selectorPosition) return; 
+
+        this.optionSelected = this.selectorPosition;
+
+        // activamos la animacion del borde
+        this.runBorderWidthGrowAnim();
+
+        this.screenFlashAnim.runFlashAnimation();
+
+        const selectedWeapon = this.surgeCannons[this.selectorPosition]
+        const text = `${selectedWeapon.name} selected`; 
+        this.movingText.setText(text); 
+        this.movingText.playAnim();
+    }
+
+    /** el grosor del borde de la seleccion  */
+    selectionBorderWidth = 0;
+
+    //** bandera para ejecutar la actualización del borde */
+    runWidthGrowing = false;
+
+    /** funcion para activar la animación del border de la seleccion */
+    private runBorderWidthGrowAnim(){
+        this.runWidthGrowing = true; 
+    }
+
+    /** acumulador de tiempo (avance de animación) */
+    growingAcc = 0; 
+
+    /** actualiza los valores de la anchura cada frame */
+    updateSelectionWidth(delta:number){
+        const finalWidth = 6;
+        const animDuration = .125; 
+        if (this.runWidthGrowing){
+            this.growingAcc += delta;
+            const timeProgress = this.growingAcc / animDuration; 
+            this.selectionBorderWidth = timeProgress * finalWidth; 
+            if (this.growingAcc >= animDuration){ // un segundo de animacion 
+                this.growingAcc = 0; 
+                this.runWidthGrowing = false; //detenemos la animacion 
+                this.selectionBorderWidth = finalWidth; // aseguramos el valor para que no sea 6.31 o algo asi
+            }
+        }
+    }
+
+    /** dibuja el recuadro que indica que has seleccionado */
+    drawSelectionBorder() {
+        const optionIndex = this.optionSelected;
+
+        // si no ha seleccionado nada no dibuja 
+        if (optionIndex === -1) return;
+        const ctx = this.ctx;
+        const padding = 10;
+        const x = this.firstOptionLocation.x - padding - 100;
+        let y = this.firstOptionLocation.y + optionIndex * this.optionSpacing - this.fontSize + padding / 2;
+        y -= 10;
+        const width = this.borderOption.width + padding * 2;
+        const height = this.borderOption.height;
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = this.selectionBorderWidth;// contiene el crecimiento
+        ctx.fillStyle = 'rgba(255,0,0,.1)';
+        ctx.fillRect(x, y, width, height);
+        ctx.strokeRect(x, y, width, height);
     }
 
     /** dibula el selector de la opcion que puede ser seleccionada */
@@ -375,7 +545,7 @@ export class SurgeCannonSubMenu extends TextTools {
         const height = this.borderOption.height;
         ctx.strokeStyle = this.selectorAnimatedColor;
         ctx.lineWidth = this.borderOption.borderWidth;
-        ctx.fillStyle = this.bgColor;
+        ctx.fillStyle = this.selectorColor;
         ctx.fillRect(x, y, width, height);
         ctx.strokeRect(x, y, width, height);
 
@@ -386,18 +556,49 @@ export class SurgeCannonSubMenu extends TextTools {
         ctx.moveTo(lineX, y + offsetY);
         ctx.lineTo(lineX + this.widthProgress, y + offsetY);
         ctx.stroke();
-        ctx.closePath()
+        //ctx.closePath();
         
         //segunda linea 
         ctx.beginPath();
         ctx.moveTo(x + 460, y + offsetY);
         ctx.lineTo(x + 460 + this.imgDescwidthProgress, y + offsetY); // linea de la imagen hacia la tercera linea
         ctx.stroke();
-        ctx.closePath()
+        //ctx.closePath()
+        
+        // esta animacion solo es para la primera opion
+        if (this.selectorPosition === 0){
+            //tercera linea la vertical de arriba hacia abajo 
+            ctx.beginPath();
+            ctx.moveTo(x + 540, y + offsetY);
+            ctx.lineTo(x + 540, y + offsetY + this.verticalHeightProgress);
+            ctx.stroke();
+            //ctx.closePath()
+        }
 
-        //ctx.lineTo(x + 540, 400);
-        //ctx.lineTo(x + 630, 400);
+        // esta animacion solo es para la primera opion
+        if (this.selectorPosition === 1){
+            
+            ctx.beginPath();
+            ctx.moveTo(x + 540, y + offsetY);
+            ctx.lineTo(x + 550 + this.imgDescwidthProgress, y + offsetY );
+            ctx.stroke();
+            //ctx.closePath()
+        }
+        
+        if (this.selectorPosition === 2){
+            ctx.beginPath();
+            ctx.moveTo(x + 540, y + offsetY);
+            ctx.lineTo(x + 540, y + offsetY - this.verticalHeightProgress);
+            ctx.stroke();
+            //ctx.closePath();
+        }
 
+        
+        ctx.beginPath();
+        ctx.moveTo(730, 400);
+        ctx.lineTo(730 + this.widthProgress , 400);
+        ctx.stroke();
+        //ctx.closePath();
     }
 
     /** dibuja la descripcion del cañon */
@@ -458,18 +659,17 @@ export class SurgeCannonSubMenu extends TextTools {
 
     /** El método update ahora solo llama a sus submétodos, manteniéndose limpio y enfocado. */
     update(deltaTime: number) {
-        // 1. Lógica del bucle de brillo del texto (siempre en ejecución)
         this._updateTextBlink(deltaTime);
-
-        // 2. Lógica de Fade In/Out
         this._updateOpacityFade(deltaTime);
-
-        // actualización del selector
         this._updateSelectorColorBlink(deltaTime)
-
         this.updateNameToImageLineWidth(deltaTime);
-
         this.updateImageToDescWidth(deltaTime);
+        this.updateVerticalHeight(deltaTime);
+        this.updateTextOpacity(deltaTime);
+        this.updateSelectorOpacity(deltaTime)
+        this.updateSelectionWidth(deltaTime);
+        this.screenFlashAnim.update(deltaTime);
+        this.movingText.update(deltaTime); 
     }
 
     /** dibujado del menu de seleccion */
@@ -477,11 +677,14 @@ export class SurgeCannonSubMenu extends TextTools {
         if (this.globalOpacity > 0.01) {
             this.drawMainBorder();
             this.drawSelector();
+            this.drawSelectionBorder();
             this.drawSurgeCannonOptions();
             this.drawBorderCannon();
             this.drawCannons();
             this.drawDescription();
             this.drawWindowTitle();
+            this.screenFlashAnim.draw();
+            this.movingText.draw(); 
         }
     }
 }

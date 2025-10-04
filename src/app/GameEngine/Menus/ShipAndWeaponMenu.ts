@@ -23,7 +23,7 @@ export class ShipAndWeaponMenu {
         this.ctx = ctx;
         this.backgroundCreator = new BackgroundCreator({ canvasRef: canvas, ctx: this.ctx, stars: true, celestialBodies: true });
         this.shipSelectionSubMenu = new ShipSelectionSubMenu(this.ctx);
-        this.surgeCannonSubMenu = new SurgeCannonSubMenu(this.ctx);   
+        this.surgeCannonSubMenu = new SurgeCannonSubMenu(this.ctx);
     }
 
     //** bandera de inicalizacion */
@@ -54,7 +54,7 @@ export class ShipAndWeaponMenu {
         this.shipSelectionSubMenu.startFadeIn();
         this.surgeCannonSubMenu.startFadeOut();
     }
-    
+
     /** la opacidad del menu de armas secundarias */
     private readonly weaponMenuOpacity = 0;
 
@@ -64,12 +64,9 @@ export class ShipAndWeaponMenu {
         /** para mostrar el menu de armas hacemos fadeOut para ocultar el menu de naves  */
         this.shipSelectionSubMenu.startFadeOut();
         this.surgeCannonSubMenu.startFadeIn()
-     }
-
-
-
-    
-
+        this.surgeCannonSubMenu.activateLinesAnim();
+        this.surgeCannonSubMenu.selectorFadeIn();
+    }
 
     /** actualizacion de datos del menu */
     update(deltaTime: number) {
@@ -78,7 +75,7 @@ export class ShipAndWeaponMenu {
         this.backgroundCreator.update();
 
         /** solo se anima si la bandera esta activada */
-        this.shipSelectionSubMenu.update(deltaTime); 
+        this.shipSelectionSubMenu.update(deltaTime);
         this.surgeCannonSubMenu.update(deltaTime);
     }
 
@@ -96,12 +93,6 @@ export class ShipAndWeaponMenu {
                 const state = this.inputState[key] ?? { firstPress: now, lastRepeat: 0 };
                 const timeHeld = now - state.firstPress;
                 const timeSinceLast = now - state.lastRepeat;
-
-                // inicia la aminacion de las lineas 
-                this.surgeCannonSubMenu.firstLineAnim = true; 
-                this.surgeCannonSubMenu.secondLineAnim = true; 
-
-
                 if (
                     timeHeld < this.inputRepeatDelay && state.lastRepeat === 0 ||
                     timeHeld >= this.inputRepeatDelay && timeSinceLast >= this.inputRepeatRate
@@ -120,36 +111,44 @@ export class ShipAndWeaponMenu {
             }
         });
 
-        if (this.inputHandler.isPressed('d')) 
-            {   //activacion de la animacion 
-                this.surgeCannonSubMenu.firstLineAnim = true; 
-                this.surgeCannonSubMenu.secondLineAnim = true; 
-                this.showWeaponWindow();
-            }
+        if (this.inputHandler.isPressed('d')) {
+            this.showWeaponWindow();
+        }
         if (this.inputHandler.isPressed('a')) this.showShipWindow();
+
+        if (this.inputHandler.isPressed(' ') || this.inputHandler.isPressed('Enter')) {
+            this.selectCurrentOption(this.currentWindow); 
+        }
     }
+
+    //* selecciona la opcion actual */
+    selectCurrentOption(currentWindow:'ships' | 'weapons'){
+        if (currentWindow === 'ships'){
+            this.shipSelectionSubMenu.selectCurrentOption(); 
+        }
+        if (currentWindow === 'weapons'){
+            this.surgeCannonSubMenu.selectCurrentOption(); 
+        }
+    } 
 
     previosOption() {
         if (this.currentWindow === 'ships') {
             this.shipSelectionSubMenu.previosOption();
         }
-        if(this.currentWindow === 'weapons'){
+        if (this.currentWindow === 'weapons') {
             this.surgeCannonSubMenu.previosOption();
         }
     }
-    
+
     /** selecciona la opcion anterior en el menu */
     nextOption() {
         if (this.currentWindow === 'ships') {
             this.shipSelectionSubMenu.nextOption();
         }
-        if(this.currentWindow === 'weapons'){
+        if (this.currentWindow === 'weapons') {
             this.surgeCannonSubMenu.nextOption();
         }
     }
-
-    
-
 
     /** dibuja el menu */
     draw() {

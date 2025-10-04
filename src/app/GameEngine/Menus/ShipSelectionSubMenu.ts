@@ -1,8 +1,12 @@
+import { ScreenFlash } from "../Animation/ScreenFlash";
 import { Border, ShipOption, SurgeCannonOption } from "./Interfaces";
 import { TextTools } from "./TextTools";
 
 export class ShipSelectionSubMenu extends TextTools {
     private ctx: CanvasRenderingContext2D;
+
+    //creador de flashes en la pantalla 
+    screenFlashAnim:ScreenFlash; 
 
     /** el tamaño de la fuente de las opciones */
     private readonly fontSize = 20;
@@ -23,6 +27,7 @@ export class ShipSelectionSubMenu extends TextTools {
         super();
         this.loadShips();
         this.ctx = ctx;
+        this.screenFlashAnim = new ScreenFlash(ctx);
     }
 
     // --- Control de Opacidad y Animación ---
@@ -40,7 +45,7 @@ export class ShipSelectionSubMenu extends TextTools {
     }
 
     get mainColor() {
-        return `rgba(40,40,150,${this.shipMenuOpacity})`;
+        return `rgba(0,0,200,${this.shipMenuOpacity})`;
     }
 
     /** el tiempo transcurrido desde que comenzó la animación de opacidad */
@@ -58,7 +63,6 @@ export class ShipSelectionSubMenu extends TextTools {
             // Setea el tiempo transcurrido para que la transición sea fluida
             // incluso si se llama startFadeOut antes de que termine startFadeIn
             this.timeElapsedOpacityAnim = (1 - this.shipMenuOpacity) * this.timeOpacityAnimacion;
-            console.log('Iniciando Fade Out');
         }
     }
 
@@ -70,8 +74,11 @@ export class ShipSelectionSubMenu extends TextTools {
             this.opacityAnimationState = 'in';
             // Setea el tiempo transcurrido para que la transición sea fluida
             this.timeElapsedOpacityAnim = this.shipMenuOpacity * this.timeOpacityAnimacion;
-            console.log('Iniciando Fade In');
         }
+    }
+
+    selectCurrentOption(){
+        this.screenFlashAnim.runFlashAnimation();
     }
 
     // --- Lógica del Menú y Gráficos (sin cambios significativos) ---
@@ -225,37 +232,7 @@ export class ShipSelectionSubMenu extends TextTools {
 
     // --- Bucle de Actualización (El motor de la animación) ---
 
-    update(deltaTime: number) {
-        if (this.opacityAnimationState === 'none') {
-            return;
-        }
-
-        // Aumentamos el tiempo transcurrido
-        this.timeElapsedOpacityAnim += deltaTime;
-        
-        // Calculamos el progreso (siempre entre 0 y 1)
-        let progress = this.timeElapsedOpacityAnim / this.timeOpacityAnimacion;
-        progress = Math.min(1, Math.max(0, progress));
-
-        if (this.opacityAnimationState === 'out') {
-            // Fade Out: la opacidad va de 1 a 0
-            this.shipMenuOpacity = 1 - progress;
-            if (progress >= 1) {
-                this.shipMenuOpacity = 0;
-                this.opacityAnimationState = 'none';
-            }
-        } else if (this.opacityAnimationState === 'in') {
-            // Fade In: la opacidad va de 0 a 1
-            this.shipMenuOpacity = progress;
-            if (progress >= 1) {
-                this.shipMenuOpacity = 1;
-                this.opacityAnimationState = 'none';
-            }
-        }
-        
-        // console.log(`Opacidad: ${this.shipMenuOpacity.toFixed(2)} | Estado: ${this.opacityAnimationState}`);
-    }
-
+    
     /** dibujamos un cuadro que contendra visualmente al menú */
     drawMainBorder() {
         const ctx = this.ctx;
@@ -277,17 +254,57 @@ export class ShipSelectionSubMenu extends TextTools {
         ctx.strokeRect(x, y, mainBorder.width, mainBorder.height);
     }
 
+    // controla la animacion de opacidad global 
+    updateOpacityMenuAnim(delta:number){
+        if (this.opacityAnimationState === 'none') {
+            return;
+        }
+
+        // Aumentamos el tiempo transcurrido
+        this.timeElapsedOpacityAnim += delta;
+        
+        // Calculamos el progreso (siempre entre 0 y 1)
+        let progress = this.timeElapsedOpacityAnim / this.timeOpacityAnimacion;
+        progress = Math.min(1, Math.max(0, progress));
+
+        if (this.opacityAnimationState === 'out') {
+            // Fade Out: la opacidad va de 1 a 0
+            this.shipMenuOpacity = 1 - progress;
+            if (progress >= 1) {
+                this.shipMenuOpacity = 0;
+                this.opacityAnimationState = 'none';
+            }
+        } else if (this.opacityAnimationState === 'in') {
+            // Fade In: la opacidad va de 0 a 1
+            this.shipMenuOpacity = progress;
+            if (progress >= 1) {
+                this.shipMenuOpacity = 1;
+                this.opacityAnimationState = 'none';
+            }
+        }
+        
+
+    }
+
+    /** ==== FUNCION GLOBAL DE ACTUALIZACION */
+    update(deltaTime: number) {
+        this.updateOpacityMenuAnim(deltaTime);
+        this.screenFlashAnim.update(deltaTime); 
+    }
+
+
     /** dibujado del menu de seleccion */
     draw() {
         // Solo dibujamos si hay algo de opacidad. Esto ahorra ciclos.
         if (this.shipMenuOpacity > 0.01) { 
-            this.drawSelector();
-            this.drawShipBorder();
             this.drawMainBorder()
+            this.drawShipBorder();
+            this.drawSelector();
             this.drawOptions();
             this.drawShip();
             this.drawShipDescription();
             this.drawWindowTitle(); 
+            this.screenFlashAnim.draw();
         }
     }
 }
